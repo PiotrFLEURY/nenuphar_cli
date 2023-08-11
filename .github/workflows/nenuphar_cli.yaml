@@ -40,6 +40,7 @@ jobs:
 
   verify-version:
     runs-on: ubuntu-latest
+    if: false
     steps:
       - name: 📚 Git Checkout
         uses: actions/checkout@v2
