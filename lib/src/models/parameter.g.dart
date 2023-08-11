@@ -14,6 +14,9 @@ Parameter _$ParameterFromJson(Map<String, dynamic> json) => Parameter(
       required: json['required'] as bool? ?? false,
       deprecated: json['deprecated'] as bool? ?? false,
       allowEmptyValue: json['allowEmptyValue'] as bool? ?? false,
+      schema: json['schema'] == null
+          ? null
+          : Schema.fromJson(json['schema'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$ParameterToJson(Parameter instance) {
@@ -32,6 +35,7 @@ Map<String, dynamic> _$ParameterToJson(Parameter instance) {
   val['required'] = instance.required;
   val['deprecated'] = instance.deprecated;
   val['allowEmptyValue'] = instance.allowEmptyValue;
+  writeNotNull('schema', instance.schema);
   return val;
 }
 

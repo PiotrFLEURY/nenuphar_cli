@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:nenuphar_cli/src/models/models.dart';
 
 part 'parameter.g.dart';
 
@@ -11,6 +12,7 @@ class Parameter {
     this.required = false,
     this.deprecated = false,
     this.allowEmptyValue = false,
+    this.schema,
   });
 
   factory Parameter.fromJson(Map<String, dynamic> json) =>
@@ -23,6 +25,7 @@ class Parameter {
   final bool required;
   final bool deprecated;
   final bool allowEmptyValue;
+  final Schema? schema;
 
   Map<String, dynamic> toJson() => _$ParameterToJson(this);
 }
