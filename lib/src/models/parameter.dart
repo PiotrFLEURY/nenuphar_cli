@@ -13,6 +13,9 @@ class Parameter {
     this.allowEmptyValue = false,
   });
 
+  factory Parameter.fromJson(Map<String, dynamic> json) =>
+      _$ParameterFromJson(json);
+
   final String name;
   @JsonKey(name: 'in')
   final InLocation inLocation;
@@ -20,9 +23,6 @@ class Parameter {
   final bool required;
   final bool deprecated;
   final bool allowEmptyValue;
-
-  factory Parameter.fromJson(Map<String, dynamic> json) =>
-      _$ParameterFromJson(json);
 
   Map<String, dynamic> toJson() => _$ParameterToJson(this);
 }
