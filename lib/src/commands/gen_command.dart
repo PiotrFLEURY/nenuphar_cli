@@ -91,12 +91,14 @@ class GenCommand extends Command<int> {
           )
           .last;
 
-      tags.add(
-        Tag(
-          name: tag,
-          description: 'Operations about $tag',
-        ),
-      );
+      if (!tags.any((e) => e.name == tag)) {
+        tags.add(
+          Tag(
+            name: tag,
+            description: 'Operations about $tag',
+          ),
+        );
+      }
 
       paths[path] = Paths(
         get: _generateGetMethod(
@@ -124,7 +126,7 @@ class GenCommand extends Command<int> {
         title: 'Nenuphar API Documentation',
         version: '1.0.0',
       ),
-      tags: tags.toSet().toList(),
+      tags: tags,
       paths: paths,
       components: _generateComponents(tags),
     );
@@ -163,6 +165,9 @@ class GenCommand extends Command<int> {
                 name: e,
                 inLocation: InLocation.path,
                 required: true,
+                schema: const Schema(
+                  type: 'string',
+                ),
               ),
             )
             .toList(),
@@ -178,8 +183,22 @@ class GenCommand extends Command<int> {
 
   Method? _generatePostMethod(String path, String tag) {
     if (path.endsWith('/')) {
+      final pathParams = _extractPathParams(path);
+
       return Method(
         tags: [tag],
+        parameters: pathParams
+            .map(
+              (e) => Parameter(
+                name: e,
+                inLocation: InLocation.path,
+                required: true,
+                schema: const Schema(
+                  type: 'string',
+                ),
+              ),
+            )
+            .toList(),
         requestBody: RequestBody(
           content: {
             'application/json': MediaType(
@@ -201,8 +220,21 @@ class GenCommand extends Command<int> {
 
   Method? _generatePutMethod(String path, String tag) {
     if (path.endsWith('/')) {
+      final pathParams = _extractPathParams(path);
       return Method(
         tags: [tag],
+        parameters: pathParams
+            .map(
+              (e) => Parameter(
+                name: e,
+                inLocation: InLocation.path,
+                required: true,
+                schema: const Schema(
+                  type: 'string',
+                ),
+              ),
+            )
+            .toList(),
         requestBody: RequestBody(
           content: {
             'application/json': MediaType(
@@ -244,6 +276,9 @@ class GenCommand extends Command<int> {
               name: e,
               inLocation: InLocation.path,
               required: true,
+              schema: const Schema(
+                type: 'string',
+              ),
             ),
           )
           .toList(),

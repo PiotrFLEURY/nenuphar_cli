@@ -31,6 +31,31 @@ nenuphar gen --output <output file>
 > 
 > You need to run the nenuphar gen command each time you update your API.
 
+## Declare resources components
+
+To declare any resource component, you need to create a json file in the `components/` folder using the same name as the resource.
+
+For example, if you want to declare a `User` resource for the `users` path, you need to create a `components/user.json` file.
+
+### Declare a resource
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "format": "int64",
+    },
+    "name": {
+      "type": "string",
+    }
+  }
+}
+```
+
+See [OpenAPI schema object specification](https://swagger.io/specification/#schema-object) for more information.
+
 ## Start your Dart Frog server
 
 Run the following command in the root of your project:

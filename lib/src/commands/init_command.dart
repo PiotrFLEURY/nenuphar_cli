@@ -58,6 +58,12 @@ class InitCommand extends Command<int> {
 
   @override
   Future<int> run() async {
+    // Ensure public folder exists
+    final publicDir = Directory('public');
+    if (!publicDir.existsSync()) {
+      publicDir.createSync();
+    }
+
     // Write index.html in public/index.html
     final file = File('public/index.html');
     await file.writeAsString(

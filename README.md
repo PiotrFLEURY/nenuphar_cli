@@ -30,19 +30,7 @@ dart pub global activate --source=path <path to this package>
 
 ## Usage
 
-```sh
-# Show CLI version
-$ nenuphar --version
-
-# Show usage help
-$ nenuphar --help
-
-# Generate openapi definition file
-$ nenuphar gen
-
-# Initialize a new swagger UI file
-$ nenuphar init
-```
+Please consult the [documentation](docs/index.md) for more information.
 
 ## Running Tests with coverage 🧪
 
