@@ -1,6 +1,8 @@
 import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
 import 'package:cli_completion/cli_completion.dart';
+import 'package:file/file.dart';
+import 'package:file/local.dart';
 import 'package:mason_logger/mason_logger.dart';
 import 'package:nenuphar_cli/src/commands/commands.dart';
 import 'package:nenuphar_cli/src/version.dart';
@@ -22,8 +24,10 @@ class NenupharCliCommandRunner extends CompletionCommandRunner<int> {
   NenupharCliCommandRunner({
     Logger? logger,
     PubUpdater? pubUpdater,
+    FileSystem? fileSystem,
   })  : _logger = logger ?? Logger(),
         _pubUpdater = pubUpdater ?? PubUpdater(),
+        _fileSystem = fileSystem ?? const LocalFileSystem(),
         super(executableName, description) {
     // Add root options and flags
     argParser
@@ -41,7 +45,12 @@ class NenupharCliCommandRunner extends CompletionCommandRunner<int> {
     // Add sub commands
     addCommand(UpdateCommand(logger: _logger, pubUpdater: _pubUpdater));
     addCommand(GenCommand(logger: _logger));
-    addCommand(InitCommand(logger: _logger));
+    addCommand(
+      InitCommand(
+        logger: _logger,
+        fileSystem: _fileSystem,
+      ),
+    );
   }
 
   @override
@@ -49,6 +58,7 @@ class NenupharCliCommandRunner extends CompletionCommandRunner<int> {
 
   final Logger _logger;
   final PubUpdater _pubUpdater;
+  final FileSystem _fileSystem;
 
   @override
   Future<int> run(Iterable<String> args) async {
