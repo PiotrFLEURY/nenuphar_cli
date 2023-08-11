@@ -31,7 +31,7 @@ nenuphar gen --output <output file>
 > 
 > You need to run the nenuphar gen command each time you update your API.
 
-## Start yout Dart Frog server
+## Start your Dart Frog server
 
 Run the following command in the root of your project:
 
