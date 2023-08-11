@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:args/command_runner.dart';
+import 'package:file/file.dart';
 import 'package:mason_logger/mason_logger.dart';
 
 /// {@template sample_command}
@@ -12,13 +11,24 @@ class InitCommand extends Command<int> {
   /// {@macro sample_command}
   InitCommand({
     required Logger logger,
-  }) : _logger = logger {
-    argParser.addOption(
-      'url',
-      abbr: 'u',
-      help: 'Specify the url of the OpenAPI file',
-    );
+    required FileSystem fileSystem,
+  })  : _logger = logger,
+        _fileSystem = fileSystem {
+    argParser
+      ..addOption(
+        'url',
+        abbr: 'u',
+        help: 'Specify the url of the OpenAPI file',
+      )
+      ..addFlag(
+        'override',
+        abbr: 'o',
+        negatable: false,
+        help: 'Override existing index.html file',
+      );
   }
+
+  final FileSystem _fileSystem;
 
   @override
   String get description => 'Sub command to initialize Swagger index.html';
@@ -58,14 +68,15 @@ class InitCommand extends Command<int> {
 
   @override
   Future<int> run() async {
-    // Ensure public folder exists
-    final publicDir = Directory('public');
-    if (!publicDir.existsSync()) {
-      publicDir.createSync();
-    }
-
     // Write index.html in public/index.html
-    final file = File('public/index.html');
+    final file = _fileSystem.file('public/index.html');
+    final override = argResults!['override'] as bool? ?? false;
+    if (!override && file.existsSync()) {
+      _logger.alert('public/index.html already exists');
+      return ExitCode.ioError.code;
+    } else {
+      file.createSync(recursive: true);
+    }
     await file.writeAsString(
       indexHtml.replaceFirst(
         '___OPENAPI_FILE_URL___',

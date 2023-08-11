@@ -1,5 +1,5 @@
 name: nenuphar_cli
-description: A Very Good Project created by Very Good CLI.
+description: An openapi generation CLI for Dart Frog created by Very Good CLI.
 version: 0.0.1
 publish_to: none
 
@@ -9,6 +9,7 @@ environment:
 dependencies:
   args: ^2.4.1
   cli_completion: ^0.3.0
+  file: ^6.1.4
   json_annotation: ^4.8.1
   mason_logger: ^0.2.5
   pub_updater: ^0.3.0
