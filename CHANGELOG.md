@@ -1,5 +1,9 @@
 # nenuphar_cli changelog
 
+## 0.0.3 (2023-08-12)
+
+* Fix documentation pictures + add video
+
 ## 0.0.2 (2023-08-12)
 
 * Improve documentation

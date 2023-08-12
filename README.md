@@ -17,7 +17,7 @@ https://github.com/PiotrFLEURY/nenuphar_cli/assets/25879276/1590e803-7888-4fa0-8
 
 # Dart Frog
 
-<img src="docs/pictures/dart_frog_logo.svg" width="100" height="100" />
+<img src="https://raw.githubusercontent.com/PiotrFLEURY/nenuphar_cli/main/docs/pictures/dart_frog_logo.svg" width="100" height="100" />
 
 [Dart Frog](https://dartfrog.vgv.dev/) is a minimalistic backend framework for Dart.
 
@@ -84,7 +84,7 @@ open http://localhost:8080/index.html
 
 ## Enjoy 🎉
 
-<img src="docs/pictures/nenuphar_swagger.png" height="400" />
+<img src="https://raw.githubusercontent.com/PiotrFLEURY/nenuphar_cli/main/docs/pictures/nenuphar_swagger.png" height="400" />
 
 __Thanks for using Nenuphar!__
 
