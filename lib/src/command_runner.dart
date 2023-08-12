@@ -44,7 +44,12 @@ class NenupharCliCommandRunner extends CompletionCommandRunner<int> {
 
     // Add sub commands
     addCommand(UpdateCommand(logger: _logger, pubUpdater: _pubUpdater));
-    addCommand(GenCommand(logger: _logger));
+    addCommand(
+      GenCommand(
+        logger: _logger,
+        fileSystem: _fileSystem,
+      ),
+    );
     addCommand(
       InitCommand(
         logger: _logger,

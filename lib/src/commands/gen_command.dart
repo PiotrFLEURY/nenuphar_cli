@@ -1,7 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:args/command_runner.dart';
+import 'package:file/file.dart';
 import 'package:mason_logger/mason_logger.dart';
+import 'package:nenuphar_cli/src/extensions/string_extension.dart';
 import 'package:nenuphar_cli/src/models/models.dart';
 
 /// {@template sample_command}
@@ -13,7 +14,9 @@ class GenCommand extends Command<int> {
   /// {@macro sample_command}
   GenCommand({
     required Logger logger,
-  }) : _logger = logger {
+    required FileSystem fileSystem,
+  })  : _logger = logger,
+        _fileSystem = fileSystem {
     argParser.addOption(
       'output',
       abbr: 'o',
@@ -29,23 +32,25 @@ class GenCommand extends Command<int> {
 
   final Logger _logger;
 
-  // A regex to find multiple {parameter} in path like
-  // /todos/{id}/comments/{commentId}
+  final FileSystem _fileSystem;
+
+  /// A regex to find multiple {parameter} in path
+  /// like /todos/{id}/comments/{commentId}
   final pathParamGroups = RegExp(r'\{([a-zA-Z]+)\}+');
 
   @override
   Future<int> run() async {
     _logger
       ..info('Will generate OpenAPI file')
-      ..info('input is: ${Directory.current.path}');
+      ..info('input is: ${_fileSystem.currentDirectory.path}');
     if (argResults?['output'] != null) {
       _logger.info(
         'output is: ${lightCyan.wrap(argResults!['output'].toString())!}',
       );
     }
 
-    // List every *.dart files in routes folder that contains @Path annotation
-    final routes = _locateRoutes('${Directory.current.path}/routes');
+    // List every *.dart files in routes folder
+    final routes = _locateRoutes('${_fileSystem.currentDirectory.path}/routes');
 
     _logger.info('Found ${routes.join('\n')} routes');
 
@@ -55,7 +60,7 @@ class GenCommand extends Command<int> {
 
     // save to file
     final output = argResults?['output'] ?? 'public/openapi.json';
-    final file = File(output.toString());
+    final file = _fileSystem.file(output.toString());
     await file.writeAsString(json);
 
     _logger.info('Generated OpenAPI file: $json');
@@ -69,13 +74,13 @@ class GenCommand extends Command<int> {
 
     for (final route in routes) {
       final path = route
-          .replaceFirst('${Directory.current.path}/routes', '')
-          .replaceFirst('index.dart', '')
+          .replaceFirst('${_fileSystem.currentDirectory.path}/routes', '')
+          .replaceFirst('/index.dart', '')
           .replaceFirst('.dart', '')
           .replaceAll('[', '{')
           .replaceAll(']', '}');
 
-      if (path == '/') {
+      if (path.isEmpty) {
         continue;
       }
 
@@ -104,7 +109,6 @@ class GenCommand extends Command<int> {
         get: _generateGetMethod(
           path,
           tag,
-          isList: path.endsWith('/'),
         ),
         post: _generatePostMethod(
           path,
@@ -132,6 +136,12 @@ class GenCommand extends Command<int> {
     );
   }
 
+  ///
+  /// Generate components from [tags]
+  /// by reading files from components/ folder
+  /// and generate schemas from them
+  /// and return a [Components] object
+  ///
   Components _generateComponents(List<Tag> tags) {
     // Read components files from components/ folder
     // and generate schemas from them
@@ -140,8 +150,9 @@ class GenCommand extends Command<int> {
 
     for (final tag in tags) {
       // Read file
-      final file =
-          File('${Directory.current.path}/components/${tag.name}.json');
+      final file = _fileSystem.file(
+        '${_fileSystem.currentDirectory.path}/components/${tag.name}.json',
+      );
       if (file.existsSync()) {
         final json =
             jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
@@ -153,8 +164,11 @@ class GenCommand extends Command<int> {
     return Components(schemas: schemas);
   }
 
+  ///
+  /// Generate a DELETE method for [path] and [tag]
+  ///
   Method? _generateDeleteMethod(String path, String tag) {
-    if (!path.endsWith('/')) {
+    if (path.endsWithPathParam()) {
       final pathParams = _extractPathParams(path);
 
       return Method(
@@ -181,8 +195,11 @@ class GenCommand extends Command<int> {
     return null;
   }
 
+  ///
+  /// Generate a POST method for [path] and [tag]
+  ///
   Method? _generatePostMethod(String path, String tag) {
-    if (path.endsWith('/')) {
+    if (!path.endsWithPathParam()) {
       final pathParams = _extractPathParams(path);
 
       return Method(
@@ -218,8 +235,11 @@ class GenCommand extends Command<int> {
     return null;
   }
 
+  ///
+  /// Generate a PUT method for [path] and [tag]
+  ///
   Method? _generatePutMethod(String path, String tag) {
-    if (path.endsWith('/')) {
+    if (!path.endsWithPathParam()) {
       final pathParams = _extractPathParams(path);
       return Method(
         tags: [tag],
@@ -261,12 +281,15 @@ class GenCommand extends Command<int> {
     return null;
   }
 
+  ///
+  /// Generate a GET method for [path] and [tag]
+  ///
   Method _generateGetMethod(
     String path,
-    String tag, {
-    bool isList = true,
-  }) {
+    String tag,
+  ) {
     final pathParams = _extractPathParams(path);
+    final isList = !path.endsWithPathParam();
 
     return Method(
       tags: [tag],
@@ -304,18 +327,28 @@ class GenCommand extends Command<int> {
     );
   }
 
+  ///
+  /// Extract path parameters from [path]
+  /// like /todos/{id}/comments/{commentId}
+  /// will return ['id', 'commentId']
+  ///
   List<String> _extractPathParams(String path) {
     final matches = pathParamGroups.allMatches(path);
     final pathParams = matches.map((e) => e.group(1)!).toList();
     return pathParams;
   }
 
+  ///
+  /// Recursively list every *.dart files in [path] folder
+  /// and return a list of their paths
+  ///
+  /// middleware files are ignored
+  ///
   List<String> _locateRoutes(String path) {
-    final entities = Directory(path).listSync();
+    final entities = _fileSystem.directory(path).listSync();
 
     final routes = entities
         .where((e) => e.path.endsWith('.dart'))
-        //.where((e) => _containsPathAnnotation(e.path))
         .where((e) => !e.path.endsWith('_middleware.dart'))
         .map((e) => e.path)
         .toList();
