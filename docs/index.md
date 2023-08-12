@@ -2,9 +2,10 @@
 
 [Dart Frog](#dart-frog)
 - [Create a new Dart Frog project](#create-a-new-dart-frog-project)
-- [Swagger OpenAPI](#swagger-openapi)
-  - [OpenAPI Specification](#openapi-specification)
-  - [Swagger UI](#swagger-ui)
+
+[Swagger OpenAPI](#swagger-openapi)
+- [OpenAPI Specification](#openapi-specification)
+- [Swagger UI](#swagger-ui)
 
 [Nenuphar](#nenuphar)
 - [Installation](#installation)
@@ -34,7 +35,7 @@ dart_frog create <project name>
 
 <img src="https://static1.smartbear.co/swagger/media/assets/images/swagger_logo.svg" width="300" height="100" style="background-color:white;padding:16;" />
 
-Swagger is a set of open-source tools built around the OpenAPI Specification that can help you design, build, document and consume REST APIs.
+Swagger is a set of open source tools built around the OpenAPI Specification that can help you design, build, document and consume REST APIs.
 
 ## OpenAPI Specification
 
