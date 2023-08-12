@@ -11,6 +11,8 @@
 
 Nenuphar is a CLI application to generate Swagger UI OpenAPI definition files for your  [Dart Frog](https://dartfrog.vgv.dev/) Server. 
 
+https://github.com/PiotrFLEURY/nenuphar_cli/assets/25879276/1590e803-7888-4fa0-8555-2f29f2035bd1
+
 ---
 
 # Dart Frog
