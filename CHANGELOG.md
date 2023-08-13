@@ -3,6 +3,7 @@
 ## 0.0.5 (2023-08-13)
 
 * Add Header params
+* Add Query params
 
 ## 0.0.4 (2023-08-12)
 

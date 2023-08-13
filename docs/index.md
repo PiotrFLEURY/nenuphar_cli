@@ -162,7 +162,18 @@ Future<Response> onRequest(RequestContext context) async {
 
 ### Query
 
-TODO
+Nenuphar searches a specific documentation comment in your Dart Frog route to generate the query parameters.
+
+Add the `@Query` tag to your documentation comment to generate the header parameter.
+
+The name of the parameter is the value of the `@Query` tag.
+
+```dart
+/// @Query(completed)
+Future<Response> onRequest(RequestContext context) async {
+  // ...
+}
+```
 
 ### Path
 

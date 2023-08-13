@@ -148,6 +148,64 @@ Future<Response> onRequest(RequestContext context) async {
       );
     });
 
+    test('Generates query params if @Query tag exists', () async {
+      // GIVEN
+      final publicDir = memoryFileSystem.directory('public');
+      if (!publicDir.existsSync()) {
+        publicDir.createSync();
+      }
+
+      memoryFileSystem.file('/routes/index.dart').createSync(recursive: true);
+
+      const todosFileContent = '''
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:dart_frog/dart_frog.dart';
+
+/// @Query(completed)
+Future<Response> onRequest(RequestContext context) async {
+  return Response(statusCode: HttpStatus.ok);
+}
+''';
+
+      memoryFileSystem.file('/routes/todos.dart')
+        ..createSync(recursive: true)
+        ..writeAsStringSync(todosFileContent);
+
+      // WHEN
+      final result = await commandRunner.run(['gen']);
+
+      // THEN
+      expect(result, equals(ExitCode.success.code));
+      final openApiFile = memoryFileSystem.file('/public/openapi.json');
+      expect(openApiFile.existsSync(), isTrue);
+      final openApi = OpenApi.fromJson(
+        jsonDecode(
+          openApiFile.readAsStringSync(),
+        ) as Map<String, dynamic>,
+      );
+
+      expect(openApi.paths, isNotEmpty);
+      expect(openApi.paths['/todos']?.get, isNotNull);
+      expect(openApi.paths['/todos']?.post, isNotNull);
+      expect(openApi.paths['/todos']?.put, isNotNull);
+
+      expect(openApi.paths['/todos']?.get?.parameters, isNotEmpty);
+      expect(
+        openApi.paths['/todos']?.get?.parameters?[0].name,
+        equals('completed'),
+      );
+      expect(
+        openApi.paths['/todos']?.get?.parameters?[0].inLocation,
+        equals(InLocation.query),
+      );
+      expect(
+        openApi.paths['/todos']?.get?.parameters?[0].required,
+        equals(false),
+      );
+    });
+
     test('Contains GET POST PUT for /todos route (with components)', () async {
       // GIVEN
       final publicDir = memoryFileSystem.directory('public');
