@@ -122,30 +122,35 @@ class GenCommand extends Command<int> {
 
     final pathParams = _extractPathParams(path);
     final headerParams = _extractHeaderParams(route);
+    final queryParams = _extractQueryParams(route);
 
     paths[path] = Paths(
       get: _generateGetMethod(
         path,
         pathParams,
         headerParams,
+        queryParams,
         tag,
       ),
       post: _generatePostMethod(
         path,
         pathParams,
         headerParams,
+        queryParams,
         tag,
       ),
       put: _generatePutMethod(
         path,
         pathParams,
         headerParams,
+        queryParams,
         tag,
       ),
       delete: _generateDeleteMethod(
         path,
         pathParams,
         headerParams,
+        queryParams,
         tag,
       ),
     );
@@ -186,6 +191,7 @@ class GenCommand extends Command<int> {
     String path,
     List<String> pathParams,
     List<String> headerParams,
+    List<String> queryParams,
     String tag,
   ) {
     if (path.endsWithPathParam()) {
@@ -213,6 +219,16 @@ class GenCommand extends Command<int> {
                 ),
               ),
             ),
+          )
+          ..addAll(
+            queryParams.map(
+              (e) => Parameter(
+                name: e,
+                schema: const Schema(
+                  type: 'string',
+                ),
+              ),
+            ),
           ),
         responses: {
           204: const ResponseBody(
@@ -231,6 +247,7 @@ class GenCommand extends Command<int> {
     String path,
     List<String> pathParams,
     List<String> headerParams,
+    List<String> queryParams,
     String tag,
   ) {
     if (!path.endsWithPathParam()) {
@@ -253,6 +270,16 @@ class GenCommand extends Command<int> {
               (e) => Parameter(
                 name: e,
                 inLocation: InLocation.header,
+                schema: const Schema(
+                  type: 'string',
+                ),
+              ),
+            ),
+          )
+          ..addAll(
+            queryParams.map(
+              (e) => Parameter(
+                name: e,
                 schema: const Schema(
                   type: 'string',
                 ),
@@ -285,6 +312,7 @@ class GenCommand extends Command<int> {
     String path,
     List<String> pathParams,
     List<String> headerParams,
+    List<String> queryParams,
     String tag,
   ) {
     if (!path.endsWithPathParam()) {
@@ -307,6 +335,16 @@ class GenCommand extends Command<int> {
               (e) => Parameter(
                 name: e,
                 inLocation: InLocation.header,
+                schema: const Schema(
+                  type: 'string',
+                ),
+              ),
+            ),
+          )
+          ..addAll(
+            queryParams.map(
+              (e) => Parameter(
+                name: e,
                 schema: const Schema(
                   type: 'string',
                 ),
@@ -346,6 +384,7 @@ class GenCommand extends Command<int> {
     String path,
     List<String> pathParams,
     List<String> headerParams,
+    List<String> queryParams,
     String tag,
   ) {
     final isList = !path.endsWithPathParam();
@@ -374,6 +413,16 @@ class GenCommand extends Command<int> {
               ),
             ),
           ),
+        )
+        ..addAll(
+          queryParams.map(
+            (e) => Parameter(
+              name: e,
+              schema: const Schema(
+                type: 'string',
+              ),
+            ),
+          ),
         ),
       responses: {
         200: ResponseBody(
@@ -397,10 +446,29 @@ class GenCommand extends Command<int> {
     );
   }
 
+  ///
+  /// Extract query parameters from [routeFile]
+  /// like /// @Query('completed')
+  /// will return ['completed']
+  /// if no query is found, return an empty list
+  ///
+  List<String> _extractQueryParams(String routeFile) {
+    final file = _fileSystem.file(routeFile);
+    final content = file.readAsStringSync();
+    final matches = RegExp(r'///\s*@Query\((.*)\)').allMatches(content);
+    return matches.map((e) => e.group(1)!).toList();
+  }
+
+  ///
+  /// Extract header parameters from [routeFile]
+  /// like /// @Header(Authorization)
+  /// will return ['Authorization']
+  /// if no header is found, return an empty list
+  ///
   List<String> _extractHeaderParams(String routeFile) {
     final file = _fileSystem.file(routeFile);
     final content = file.readAsStringSync();
-    final matches = RegExp(r'/// @Header\((.*)\)').allMatches(content);
+    final matches = RegExp(r'///\s*@Header\((.*)\)').allMatches(content);
     return matches.map((e) => e.group(1)!).toList();
   }
 
