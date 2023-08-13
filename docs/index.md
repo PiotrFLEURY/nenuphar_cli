@@ -11,8 +11,13 @@
 - [Installation](#installation)
 - [Initialize your project](#initialize-your-project)
 - [Generate openapi definition file](#generate-openapi-definition-file)
-- [Declare resources components](#declare-resources-components)
+- [Declare resources components](#resources-components)
   - [Declare a resource](#declare-a-resource)
+- [Parameters](#parameters)
+  - [Header](#header)
+  - [Query](#query)
+  - [Path](#path)
+  - [Body](#body)
 - [Start your Dart Frog server](#start-your-dart-frog-server)
 - [Enjoy 🎉](#enjoy-)
 
@@ -110,7 +115,7 @@ This file is loaded by the `public/index.html` file to display the documentation
 > 
 > You need to run the nenuphar gen command each time you update your API.
 
-## Declare resources components
+## Resources components
 
 To declare any resource component, you need to create a json file in the `components/` folder using the same name as the resource.
 
@@ -137,6 +142,35 @@ For example, if you want to declare a `Todo` resource for the `/todos` path, you
 ```
 
 See [OpenAPI schema object specification](https://swagger.io/specification/#schema-object) for more information.
+
+## Parameters
+
+### Header
+
+Nenuphar searches a specific documentation comment in your Dart Frog route to generate the header parameters.
+
+Add the `@Header` tag to your documentation comment to generate the header parameter.
+
+The name of the parameter is the value of the `@Header` tag.
+
+```dart
+/// @Header(Authorization)
+Future<Response> onRequest(RequestContext context) async {
+  // ...
+}
+```
+
+### Query
+
+TODO
+
+### Path
+
+Path parameters are automatically detected by nenuphar using the Dart Frog [Dynamic routes system](https://dartfrog.vgv.dev/docs/basics/routes#dynamic-routes-)
+
+### Body
+
+Body parameters are generated using the [Resource components](#resources-components) declared in the `components/` folder.
 
 ## Start your Dart Frog server
 

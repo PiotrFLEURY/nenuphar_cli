@@ -73,56 +73,7 @@ class GenCommand extends Command<int> {
     final tags = <Tag>[];
 
     for (final route in routes) {
-      final path = route
-          .replaceFirst('${_fileSystem.currentDirectory.path}/routes', '')
-          .replaceFirst('/index.dart', '')
-          .replaceFirst('.dart', '')
-          .replaceAll('[', '{')
-          .replaceAll(']', '}');
-
-      if (path.isEmpty) {
-        continue;
-      }
-
-      _logger.info(' evaluating path: $path');
-
-      final tag = path
-          .split('/')
-          .where((segment) => segment.isNotEmpty)
-          .where(
-            (segment) => !segment.contains(
-              RegExp(r'\{.*\}*'),
-            ),
-          )
-          .last;
-
-      if (!tags.any((e) => e.name == tag)) {
-        tags.add(
-          Tag(
-            name: tag,
-            description: 'Operations about $tag',
-          ),
-        );
-      }
-
-      paths[path] = Paths(
-        get: _generateGetMethod(
-          path,
-          tag,
-        ),
-        post: _generatePostMethod(
-          path,
-          tag,
-        ),
-        put: _generatePutMethod(
-          path,
-          tag,
-        ),
-        delete: _generateDeleteMethod(
-          path,
-          tag,
-        ),
-      );
+      _parseRoute(route, tags, paths);
     }
 
     return OpenApi(
@@ -133,6 +84,70 @@ class GenCommand extends Command<int> {
       tags: tags,
       paths: paths,
       components: _generateComponents(tags),
+    );
+  }
+
+  void _parseRoute(String route, List<Tag> tags, Map<String, Paths> paths) {
+    final path = route
+        .replaceFirst('${_fileSystem.currentDirectory.path}/routes', '')
+        .replaceFirst('/index.dart', '')
+        .replaceFirst('.dart', '')
+        .replaceAll('[', '{')
+        .replaceAll(']', '}');
+
+    if (path.isEmpty) {
+      return;
+    }
+
+    _logger.info(' evaluating path: $path');
+
+    final tag = path
+        .split('/')
+        .where((segment) => segment.isNotEmpty)
+        .where(
+          (segment) => !segment.contains(
+            RegExp(r'\{.*\}*'),
+          ),
+        )
+        .last;
+
+    if (!tags.any((e) => e.name == tag)) {
+      tags.add(
+        Tag(
+          name: tag,
+          description: 'Operations about $tag',
+        ),
+      );
+    }
+
+    final pathParams = _extractPathParams(path);
+    final headerParams = _extractHeaderParams(route);
+
+    paths[path] = Paths(
+      get: _generateGetMethod(
+        path,
+        pathParams,
+        headerParams,
+        tag,
+      ),
+      post: _generatePostMethod(
+        path,
+        pathParams,
+        headerParams,
+        tag,
+      ),
+      put: _generatePutMethod(
+        path,
+        pathParams,
+        headerParams,
+        tag,
+      ),
+      delete: _generateDeleteMethod(
+        path,
+        pathParams,
+        headerParams,
+        tag,
+      ),
     );
   }
 
@@ -165,12 +180,15 @@ class GenCommand extends Command<int> {
   }
 
   ///
-  /// Generate a DELETE method for [path] and [tag]
+  /// Generate a DELETE method for [path]
   ///
-  Method? _generateDeleteMethod(String path, String tag) {
+  Method? _generateDeleteMethod(
+    String path,
+    List<String> pathParams,
+    List<String> headerParams,
+    String tag,
+  ) {
     if (path.endsWithPathParam()) {
-      final pathParams = _extractPathParams(path);
-
       return Method(
         tags: [tag],
         parameters: pathParams
@@ -184,7 +202,18 @@ class GenCommand extends Command<int> {
                 ),
               ),
             )
-            .toList(),
+            .toList()
+          ..addAll(
+            headerParams.map(
+              (e) => Parameter(
+                name: e,
+                inLocation: InLocation.header,
+                schema: const Schema(
+                  type: 'string',
+                ),
+              ),
+            ),
+          ),
         responses: {
           204: const ResponseBody(
             description: 'Deleted',
@@ -196,12 +225,15 @@ class GenCommand extends Command<int> {
   }
 
   ///
-  /// Generate a POST method for [path] and [tag]
+  /// Generate a POST method for [path]
   ///
-  Method? _generatePostMethod(String path, String tag) {
+  Method? _generatePostMethod(
+    String path,
+    List<String> pathParams,
+    List<String> headerParams,
+    String tag,
+  ) {
     if (!path.endsWithPathParam()) {
-      final pathParams = _extractPathParams(path);
-
       return Method(
         tags: [tag],
         parameters: pathParams
@@ -215,7 +247,18 @@ class GenCommand extends Command<int> {
                 ),
               ),
             )
-            .toList(),
+            .toList()
+          ..addAll(
+            headerParams.map(
+              (e) => Parameter(
+                name: e,
+                inLocation: InLocation.header,
+                schema: const Schema(
+                  type: 'string',
+                ),
+              ),
+            ),
+          ),
         requestBody: RequestBody(
           content: {
             'application/json': MediaType(
@@ -236,11 +279,15 @@ class GenCommand extends Command<int> {
   }
 
   ///
-  /// Generate a PUT method for [path] and [tag]
+  /// Generate a PUT method for [path]
   ///
-  Method? _generatePutMethod(String path, String tag) {
+  Method? _generatePutMethod(
+    String path,
+    List<String> pathParams,
+    List<String> headerParams,
+    String tag,
+  ) {
     if (!path.endsWithPathParam()) {
-      final pathParams = _extractPathParams(path);
       return Method(
         tags: [tag],
         parameters: pathParams
@@ -254,7 +301,18 @@ class GenCommand extends Command<int> {
                 ),
               ),
             )
-            .toList(),
+            .toList()
+          ..addAll(
+            headerParams.map(
+              (e) => Parameter(
+                name: e,
+                inLocation: InLocation.header,
+                schema: const Schema(
+                  type: 'string',
+                ),
+              ),
+            ),
+          ),
         requestBody: RequestBody(
           content: {
             'application/json': MediaType(
@@ -282,13 +340,14 @@ class GenCommand extends Command<int> {
   }
 
   ///
-  /// Generate a GET method for [path] and [tag]
+  /// Generate a GET method for [path]
   ///
   Method _generateGetMethod(
     String path,
+    List<String> pathParams,
+    List<String> headerParams,
     String tag,
   ) {
-    final pathParams = _extractPathParams(path);
     final isList = !path.endsWithPathParam();
 
     return Method(
@@ -304,7 +363,18 @@ class GenCommand extends Command<int> {
               ),
             ),
           )
-          .toList(),
+          .toList()
+        ..addAll(
+          headerParams.map(
+            (e) => Parameter(
+              name: e,
+              inLocation: InLocation.header,
+              schema: const Schema(
+                type: 'string',
+              ),
+            ),
+          ),
+        ),
       responses: {
         200: ResponseBody(
           description: isList ? 'A list of $tag.' : 'A $tag.',
@@ -325,6 +395,13 @@ class GenCommand extends Command<int> {
         ),
       },
     );
+  }
+
+  List<String> _extractHeaderParams(String routeFile) {
+    final file = _fileSystem.file(routeFile);
+    final content = file.readAsStringSync();
+    final matches = RegExp(r'/// @Header\((.*)\)').allMatches(content);
+    return matches.map((e) => e.group(1)!).toList();
   }
 
   ///

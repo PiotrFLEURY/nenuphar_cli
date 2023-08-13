@@ -6,6 +6,7 @@ import 'package:mason_logger/mason_logger.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nenuphar_cli/src/command_runner.dart';
 import 'package:nenuphar_cli/src/models/openapi.dart';
+import 'package:nenuphar_cli/src/models/parameter.dart';
 import 'package:test/test.dart';
 
 class _MockLogger extends Mock implements Logger {}
@@ -87,6 +88,64 @@ void main() {
       expect(openApi.paths['/todos']?.trace, isNull);
 
       expect(openApi.components?.schemas, isEmpty);
+    });
+
+    test('Generates header params if @Header tag exists', () async {
+      // GIVEN
+      final publicDir = memoryFileSystem.directory('public');
+      if (!publicDir.existsSync()) {
+        publicDir.createSync();
+      }
+
+      memoryFileSystem.file('/routes/index.dart').createSync(recursive: true);
+
+      const todosFileContent = '''
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:dart_frog/dart_frog.dart';
+
+/// @Header(Authorization)
+Future<Response> onRequest(RequestContext context) async {
+  return Response(statusCode: HttpStatus.ok);
+}
+''';
+
+      memoryFileSystem.file('/routes/todos.dart')
+        ..createSync(recursive: true)
+        ..writeAsStringSync(todosFileContent);
+
+      // WHEN
+      final result = await commandRunner.run(['gen']);
+
+      // THEN
+      expect(result, equals(ExitCode.success.code));
+      final openApiFile = memoryFileSystem.file('/public/openapi.json');
+      expect(openApiFile.existsSync(), isTrue);
+      final openApi = OpenApi.fromJson(
+        jsonDecode(
+          openApiFile.readAsStringSync(),
+        ) as Map<String, dynamic>,
+      );
+
+      expect(openApi.paths, isNotEmpty);
+      expect(openApi.paths['/todos']?.get, isNotNull);
+      expect(openApi.paths['/todos']?.post, isNotNull);
+      expect(openApi.paths['/todos']?.put, isNotNull);
+
+      expect(openApi.paths['/todos']?.get?.parameters, isNotEmpty);
+      expect(
+        openApi.paths['/todos']?.get?.parameters?[0].name,
+        equals('Authorization'),
+      );
+      expect(
+        openApi.paths['/todos']?.get?.parameters?[0].inLocation,
+        equals(InLocation.header),
+      );
+      expect(
+        openApi.paths['/todos']?.get?.parameters?[0].required,
+        equals(false),
+      );
     });
 
     test('Contains GET POST PUT for /todos route (with components)', () async {
