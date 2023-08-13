@@ -5,11 +5,11 @@ part 'openapi.g.dart';
 
 @JsonSerializable()
 class OpenApi {
-  const OpenApi({
+  OpenApi({
     this.openapi = '3.0.3',
     this.info = const Info(),
-    // TODO(piotr): externalDocs object
-    // TODO(piotr): servers object
+    this.externalDocs = const ExternalDocumentation(),
+    this.servers = const [Server()],
     this.tags,
     this.paths = const {},
     this.components,
@@ -20,10 +20,12 @@ class OpenApi {
 
   final String openapi;
   final Info info;
-  final List<Tag>? tags;
-  final Components? components;
+  final ExternalDocumentation externalDocs;
+  final List<Server> servers;
+  List<Tag>? tags;
+  Components? components;
 
-  final Map<String, Paths> paths;
+  Map<String, Paths> paths;
 
   Map<String, dynamic> toJson() => _$OpenApiToJson(this);
 }

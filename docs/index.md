@@ -1,5 +1,16 @@
 # Nenuphar Documentation
 
+Nenuphar is a tool to generate [Swagger OpenAPI](https://swagger.io/specification/) documentation for [Dart Frog](https://dartfrog.vgv.dev/) projects.
+
+Generate your OpenAPI documentation in few steps:
+* [Create a new Dart Frog project](#create-a-new-dart-frog-project)
+* [Initialize nenuphar](#initialize-nenuphar)
+* [Generate openapi definition file](#generate-openapi-definition-file)
+* [Enjoy 🎉](#enjoy-)
+
+# Table of contents
+
+
 [Dart Frog](#dart-frog)
 - [Create a new Dart Frog project](#create-a-new-dart-frog-project)
 
@@ -9,8 +20,14 @@
 
 [Nenuphar](#nenuphar)
 - [Installation](#installation)
-- [Initialize your project](#initialize-your-project)
+- [Initialize nenuphar](#initialize-nenuphar)
+  - [Index.html file](#indexhtml-file)
+  - [nenuphar.json file](#nenupharjson-file)
+  - [init failures](#init-failures)
+  - [init command available options](#init-command-available-options)
 - [Generate openapi definition file](#generate-openapi-definition-file)
+  - [gen failures](#gen-failures)
+  - [gen command available options](#gen-command-available-options)
 - [Declare resources components](#resources-components)
   - [Declare a resource](#declare-a-resource)
 - [Parameters](#parameters)
@@ -25,7 +42,7 @@
 
 <img src="https://raw.githubusercontent.com/PiotrFLEURY/nenuphar_cli/main/docs/pictures/dart_frog_logo.svg" width="100" height="100" />
 
-[Dart Frog](https://dartfrog.vgv.dev/) is a minimalistic backend framework for Dart.
+[Dart Frog](https://dartfrog.vgv.dev/) is a minimalistic backend framework for Dart made by [VGVentures](https://vgventures.fr/).
 
 ## Create a new Dart Frog project
 
@@ -58,13 +75,15 @@ Please visit [https://swagger.io/tools/swagger-ui/](https://swagger.io/tools/swa
 
 # Nenuphar 
 
+<img src="https://raw.githubusercontent.com/PiotrFLEURY/nenuphar_cli/main/docs/pictures/logo.png" width="200" height="200" />
+
 ## Installation
 
 ```sh
 dart pub global activate nenuphar_cli
 ```
 
-## Initialize your project
+## Initialize nenuphar
 
 First you need to initialize your project by running the following command in the root of your project:
 
@@ -72,9 +91,59 @@ First you need to initialize your project by running the following command in th
 nenuphar init
 ```
 
-This will create new file `public/index.html`. This file will be served statically by your Dart Frog server to expose your `Swagger UI` documentation.
+### Index.html file
 
-### Available options
+Init command will create new file `public/index.html`. This file will be served statically by your Dart Frog server to expose your `Swagger UI` documentation.
+
+### nenuphar.json file
+
+Init command will create new file `nenuphar.json`. This file contains the base configuration of your openapi documentation.
+
+Feel free to edit this file with your own configuration.
+
+```json
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "A sample API",
+    "description": "A sample API",
+    "termsOfService": "http://localhost",
+    "contact": {
+      "name": "none",
+      "url": "http://localhost",
+      "email": "none@api.com"
+    },
+    "license": {
+      "name": "",
+      "url": ""
+    },
+    "version": "0.0.0"
+  },
+  "externalDocs": {
+    "description": "",
+    "url": "http://localhost/"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Local server"
+    }
+  ],
+  "paths": {}
+}
+```
+
+### Init failures
+
+__Error: index.html already exists__
+
+init command will fail if the `public/index.html` file already exists and the `--override` option is not set to `true`.
+
+__Error: nenuphar.json already exists__
+
+init command will fail if the `nenuphar.json` file already exists and the `--override` option is not set to `true`.
+
+### init command available options
 
 | Option | Abbr | Description | Default value |
 | --- | --- | --- | --- |
@@ -102,7 +171,13 @@ Then generate the OpenAPI definition file
 nenuphar gen
 ```
 
-### Available options
+### gen failures
+
+__Error: Init not called__
+
+gen command can fail if you didn't call the `nenuphar init` command before.
+
+### gen command available options
 
 | Option | Abbr | Description | Default value |
 | --- | --- | --- | --- |

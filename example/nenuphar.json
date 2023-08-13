@@ -1,0 +1,29 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Nenuphar API Documentation",
+    "description": "Example of Todo API documented with Nenuphar",
+    "termsOfService": "https://tosdr.org/",
+    "contact": {
+      "name": "Piotr FLEURY",
+      "url": "https://github.com/PiotrFLEURY/nenuphar_cli",
+      "email": "piotr.fleury@gmail.com"
+    },
+    "license": {
+      "name": "BSD 3-Clause License",
+      "url": "https://github.com/PiotrFLEURY/nenuphar_cli/blob/main/LICENSE"
+    },
+    "version": "1.0.0"
+  },
+  "externalDocs": {
+    "description": "Nenuphar CLI detailed documentation",
+    "url": "https://piotrfleury.github.io/nenuphar_cli/"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Local server"
+    }
+  ],
+  "paths": {}
+}

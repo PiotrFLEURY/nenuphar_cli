@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:args/command_runner.dart';
 import 'package:file/file.dart';
 import 'package:mason_logger/mason_logger.dart';
+import 'package:nenuphar_cli/src/models/models.dart';
 
 /// {@template sample_command}
 ///
@@ -85,6 +88,18 @@ class InitCommand extends Command<int> {
     );
 
     _logger.info('Generated public/index.html file');
+
+    final nenupharJson = _fileSystem.file('nenuphar.json');
+    if (!override && nenupharJson.existsSync()) {
+      _logger.alert('nenuphar.json already exists');
+      return ExitCode.ioError.code;
+    } else {
+      nenupharJson
+        ..createSync()
+        ..writeAsStringSync(
+          const JsonEncoder.withIndent('  ').convert(OpenApi()),
+        );
+    }
 
     return ExitCode.success.code;
   }
