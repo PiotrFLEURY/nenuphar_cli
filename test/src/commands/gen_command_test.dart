@@ -26,12 +26,33 @@ void main() {
       );
     });
 
+    test('Fail if nenuphar.json does not exists', () async {
+      // GIVEN
+      final nenupharJson = memoryFileSystem.file('nenuphar.json');
+      if (nenupharJson.existsSync()) {
+        nenupharJson.deleteSync();
+      }
+
+      memoryFileSystem.file('/routes/index.dart').createSync(recursive: true);
+
+      // WHEN
+      final result = await commandRunner.run(['gen']);
+
+      // THEN
+      expect(result, equals(ExitCode.usage.code));
+    });
+
     test('Contains no operation if only / route exists', () async {
       // GIVEN
       final publicDir = memoryFileSystem.directory('public');
       if (!publicDir.existsSync()) {
         publicDir.createSync();
       }
+      memoryFileSystem.file('nenuphar.json')
+        ..createSync()
+        ..writeAsStringSync(
+          const JsonEncoder.withIndent('  ').convert(OpenApi()),
+        );
 
       memoryFileSystem.file('/routes/index.dart').createSync(recursive: true);
 
@@ -58,6 +79,11 @@ void main() {
       if (!publicDir.existsSync()) {
         publicDir.createSync();
       }
+      memoryFileSystem.file('nenuphar.json')
+        ..createSync()
+        ..writeAsStringSync(
+          const JsonEncoder.withIndent('  ').convert(OpenApi()),
+        );
 
       memoryFileSystem.file('/routes/index.dart').createSync(recursive: true);
       memoryFileSystem.file('/routes/todos.dart').createSync(recursive: true);
@@ -96,6 +122,11 @@ void main() {
       if (!publicDir.existsSync()) {
         publicDir.createSync();
       }
+      memoryFileSystem.file('nenuphar.json')
+        ..createSync()
+        ..writeAsStringSync(
+          const JsonEncoder.withIndent('  ').convert(OpenApi()),
+        );
 
       memoryFileSystem.file('/routes/index.dart').createSync(recursive: true);
 
@@ -154,6 +185,11 @@ Future<Response> onRequest(RequestContext context) async {
       if (!publicDir.existsSync()) {
         publicDir.createSync();
       }
+      memoryFileSystem.file('nenuphar.json')
+        ..createSync()
+        ..writeAsStringSync(
+          const JsonEncoder.withIndent('  ').convert(OpenApi()),
+        );
 
       memoryFileSystem.file('/routes/index.dart').createSync(recursive: true);
 
@@ -212,6 +248,11 @@ Future<Response> onRequest(RequestContext context) async {
       if (!publicDir.existsSync()) {
         publicDir.createSync();
       }
+      memoryFileSystem.file('nenuphar.json')
+        ..createSync()
+        ..writeAsStringSync(
+          const JsonEncoder.withIndent('  ').convert(OpenApi()),
+        );
 
       memoryFileSystem.file('/routes/index.dart').createSync(recursive: true);
       memoryFileSystem.file('/routes/todos.dart').createSync(recursive: true);
@@ -270,6 +311,11 @@ Future<Response> onRequest(RequestContext context) async {
       if (!publicDir.existsSync()) {
         publicDir.createSync();
       }
+      memoryFileSystem.file('nenuphar.json')
+        ..createSync()
+        ..writeAsStringSync(
+          const JsonEncoder.withIndent('  ').convert(OpenApi()),
+        );
 
       memoryFileSystem.file('/routes/index.dart').createSync(recursive: true);
       memoryFileSystem

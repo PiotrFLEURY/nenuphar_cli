@@ -1,5 +1,9 @@
 # nenuphar_cli changelog
 
+## 0.0.7 (2023-08-13)
+
+* Add nenuphar.json file for base OpenAPI configuration
+
 ## 0.0.6 (2023-08-13)
 
 * Fix unsecure ling in README.md

@@ -6,8 +6,8 @@ import 'package:test/test.dart';
 void main() {
   test('jsonEncode openApi', () {
     // GIVEN
-    const openApi = OpenApi(
-      info: Info(
+    final openApi = OpenApi(
+      info: const Info(
         title: 'Todo API',
         version: '1.0.0',
         contact: Contact(
@@ -21,7 +21,7 @@ void main() {
         ),
       ),
       paths: {
-        '/todo': Paths(
+        '/todo': const Paths(
           get: Method(
             responses: {
               200: ResponseBody(

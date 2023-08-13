@@ -36,6 +36,8 @@ void main() {
       expect(result, equals(ExitCode.success.code));
       final indexHtmlFile = memoryFileSystem.file('public/index.html');
       expect(indexHtmlFile.existsSync(), isTrue);
+      final nenupharJsonFile = memoryFileSystem.file('nenuphar.json');
+      expect(nenupharJsonFile.existsSync(), isTrue);
     });
 
     test('initialize index.html when public dir already exists', () async {
@@ -52,6 +54,8 @@ void main() {
       expect(result, equals(ExitCode.success.code));
       final indexHtmlFile = memoryFileSystem.file('public/index.html');
       expect(indexHtmlFile.existsSync(), isTrue);
+      final nenupharJsonFile = memoryFileSystem.file('nenuphar.json');
+      expect(nenupharJsonFile.existsSync(), isTrue);
     });
 
     test('fail if public/index.html already exists', () async {
@@ -68,11 +72,29 @@ void main() {
       expect(result, equals(ExitCode.ioError.code));
     });
 
+    test('fail if nenuphar.json already exists', () async {
+      // GIVEN
+      final nenupharJsonFile = memoryFileSystem.file('nenuphar.json');
+      if (!nenupharJsonFile.existsSync()) {
+        nenupharJsonFile.createSync(recursive: true);
+      }
+
+      // WHEN
+      final result = await commandRunner.run(['init']);
+
+      // THEN
+      expect(result, equals(ExitCode.ioError.code));
+    });
+
     test('succeed if public/index.html already exists with -o flag', () async {
       // GIVEN
       final index = memoryFileSystem.file('public/index.html');
       if (!index.existsSync()) {
         index.createSync(recursive: true);
+      }
+      final nenupharJsonFile = memoryFileSystem.file('nenuphar.json');
+      if (!nenupharJsonFile.existsSync()) {
+        nenupharJsonFile.createSync(recursive: true);
       }
 
       // WHEN
@@ -82,6 +104,7 @@ void main() {
       expect(result, equals(ExitCode.success.code));
       final indexHtmlFile = memoryFileSystem.file('public/index.html');
       expect(indexHtmlFile.existsSync(), isTrue);
+      expect(nenupharJsonFile.existsSync(), isTrue);
     });
   });
 }

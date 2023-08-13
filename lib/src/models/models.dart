@@ -1,5 +1,6 @@
 export 'components.dart';
 export 'contact.dart';
+export 'external_documentation.dart';
 export 'info.dart';
 export 'license.dart';
 export 'media_type.dart';
@@ -10,4 +11,5 @@ export 'paths.dart';
 export 'request_body.dart';
 export 'response_body.dart';
 export 'schema.dart';
+export 'server.dart';
 export 'tag.dart';

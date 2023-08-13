@@ -54,18 +54,23 @@ class GenCommand extends Command<int> {
 
     _logger.info('Found ${routes.join('\n')} routes');
 
-    final openApi = _generateOpenApi(routes);
+    try {
+      final openApi = _generateOpenApi(routes);
 
-    final json = jsonEncode(openApi.toJson());
+      final json = jsonEncode(openApi.toJson());
 
-    // save to file
-    final output = argResults?['output'] ?? 'public/openapi.json';
-    final file = _fileSystem.file(output.toString());
-    await file.writeAsString(json);
+      // save to file
+      final output = argResults?['output'] ?? 'public/openapi.json';
+      final file = _fileSystem.file(output.toString());
+      await file.writeAsString(json);
 
-    _logger.info('Generated OpenAPI file: $json');
+      _logger.info('Generated OpenAPI file: $json');
 
-    return ExitCode.success.code;
+      return ExitCode.success.code;
+    } catch (e) {
+      _logger.alert('Failed to generate OpenAPI file: $e');
+      return ExitCode.usage.code;
+    }
   }
 
   OpenApi _generateOpenApi(List<String> routes) {
@@ -76,15 +81,25 @@ class GenCommand extends Command<int> {
       _parseRoute(route, tags, paths);
     }
 
-    return OpenApi(
-      info: const Info(
-        title: 'Nenuphar API Documentation',
-        version: '1.0.0',
-      ),
-      tags: tags,
-      paths: paths,
-      components: _generateComponents(tags),
+    // Read nenuphar.json file
+    final nenupharJsonFile = _fileSystem.file('nenuphar.json');
+    if (!nenupharJsonFile.existsSync()) {
+      _logger.alert(
+        'nenuphar.json file not found. Please run nenuphar init first',
+      );
+      throw Exception('nenuphar.json file not found');
+    }
+
+    final openAPiBase = OpenApi.fromJson(
+      jsonDecode(
+        nenupharJsonFile.readAsStringSync(),
+      ) as Map<String, dynamic>,
     );
+
+    return openAPiBase
+      ..tags = tags
+      ..paths = paths
+      ..components = _generateComponents(tags);
   }
 
   void _parseRoute(String route, List<Tag> tags, Map<String, Paths> paths) {
