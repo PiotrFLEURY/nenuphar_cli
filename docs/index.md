@@ -129,13 +129,13 @@ For example, if you want to declare a `Todo` resource for the `/todos` path, you
   "properties": {
     "id": {
       "type": "integer",
-      "format": "int64",
+      "format": "int64"
     },
     "name": {
-      "type": "string",
+      "type": "string"
     },
-    "done": {
-      "type": "boolean",
+    "completed": {
+      "type": "boolean"
     }
   }
 }

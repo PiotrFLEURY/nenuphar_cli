@@ -1,5 +1,10 @@
 # nenuphar_cli changelog
 
+## 0.0.6 (2023-08-13)
+
+* Fix unsecure ling in README.md
+* Add example
+
 ## 0.0.5 (2023-08-13)
 
 * Add Header params
