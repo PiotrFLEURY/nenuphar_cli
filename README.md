@@ -76,7 +76,7 @@ You're now ready to start your Dart Frog server
 dart_frog dev
 ```
 
-Visit [http://localhost:8080/index.html](http://localhost:8080/index.html) to see your documentation.
+Visit http://localhost:8080/index.html to see your documentation.
 
 ```sh
 open http://localhost:8080/index.html
