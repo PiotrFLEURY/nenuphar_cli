@@ -30,6 +30,7 @@ Generate your OpenAPI documentation in few steps:
   - [gen command available options](#gen-command-available-options)
 - [Declare resources components](#resources-components)
   - [Declare a resource](#declare-a-resource)
+- [Allowed methods](#allowed-methods)
 - [Parameters](#parameters)
   - [Header](#header)
   - [Query](#query)
@@ -217,6 +218,29 @@ For example, if you want to declare a `Todo` resource for the `/todos` path, you
 ```
 
 See [OpenAPI schema object specification](https://swagger.io/specification/#schema-object) for more information.
+
+## Allowed methods
+
+By default, nenuphar generates the documentation for the following methods:
+
+* OPTIONS
+* GET
+* HEAD
+* POST
+* PUT
+* PATCH
+* DELETE
+
+You can override this behavior by adding the `@Allow` tag to your documentation comment. This tag will only allow the specified methods.
+
+The example below will only allow the `GET` and `POST` methods.
+
+```dart
+/// @Allow(GET, POST)
+Future<Response> onRequest(RequestContext context) async {
+  // ...
+}
+```
 
 ## Parameters
 

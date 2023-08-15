@@ -64,8 +64,6 @@ class GenCommand extends Command<int> {
       final file = _fileSystem.file(output.toString());
       await file.writeAsString(json);
 
-      _logger.info('Generated OpenAPI file: $json');
-
       return ExitCode.success.code;
     } catch (e) {
       _logger.alert('Failed to generate OpenAPI file: $e');
@@ -150,58 +148,82 @@ class GenCommand extends Command<int> {
     final pathParams = _extractPathParams(path);
     final headerParams = _extractHeaderParams(route);
     final queryParams = _extractQueryParams(route);
+    final allowedMethods = _extractAllowMethods(route);
+
+    if (allowedMethods.isEmpty) {
+      _logger.info('No allowed methods found for $path');
+
+      allowedMethods.addAll([
+        'options',
+        'get',
+        'head',
+        'post',
+        'put',
+        'patch',
+        'delete',
+      ]);
+
+      _logger.info('Using default allowed methods: $allowedMethods');
+    }
 
     paths[path] = Paths(
       options: _generateOptionMethod(
-        path,
-        pathParams,
-        headerParams,
-        tag,
+        path: path,
+        pathParams: pathParams,
+        headerParams: headerParams,
+        tag: tag,
+        methodAllowed: allowedMethods.contains('options'),
       ),
       get: _generateGetMethod(
-        path,
-        pathParams,
-        headerParams,
-        queryParams,
-        tag,
-        schemas.containsKey(tag),
+        path: path,
+        pathParams: pathParams,
+        headerParams: headerParams,
+        queryParams: queryParams,
+        tag: tag,
+        existingSchema: schemas.containsKey(tag),
+        methodAllowed: allowedMethods.contains('get'),
       ),
       head: _generateHeadMethod(
-        path,
-        pathParams,
-        headerParams,
-        tag,
+        path: path,
+        pathParams: pathParams,
+        headerParams: headerParams,
+        tag: tag,
+        methodAllowed: allowedMethods.contains('head'),
       ),
       post: _generatePostMethod(
-        path,
-        pathParams,
-        headerParams,
-        queryParams,
-        tag,
-        schemas.containsKey(tag),
+        path: path,
+        pathParams: pathParams,
+        headerParams: headerParams,
+        queryParams: queryParams,
+        tag: tag,
+        existingSchema: schemas.containsKey(tag),
+        methodAllowed: allowedMethods.contains('post'),
       ),
       put: _generatePutMethod(
-        path,
-        pathParams,
-        headerParams,
-        queryParams,
-        tag,
-        schemas.containsKey(tag),
+        path: path,
+        pathParams: pathParams,
+        headerParams: headerParams,
+        queryParams: queryParams,
+        tag: tag,
+        existingSchema: schemas.containsKey(tag),
+        methodAllowed: allowedMethods.contains('put'),
       ),
       patch: _generatePutMethod(
-        path,
-        pathParams,
-        headerParams,
-        queryParams,
-        tag,
-        schemas.containsKey(tag),
+        path: path,
+        pathParams: pathParams,
+        headerParams: headerParams,
+        queryParams: queryParams,
+        tag: tag,
+        existingSchema: schemas.containsKey(tag),
+        methodAllowed: allowedMethods.contains('patch'),
       ),
       delete: _generateDeleteMethod(
-        path,
-        pathParams,
-        headerParams,
-        queryParams,
-        tag,
+        path: path,
+        pathParams: pathParams,
+        headerParams: headerParams,
+        queryParams: queryParams,
+        tag: tag,
+        methodAllowed: allowedMethods.contains('delete'),
       ),
     );
   }
@@ -221,14 +243,15 @@ class GenCommand extends Command<int> {
   ///
   /// Generate a DELETE method for [path]
   ///
-  Method? _generateDeleteMethod(
-    String path,
-    List<String> pathParams,
-    List<String> headerParams,
-    List<String> queryParams,
-    String tag,
-  ) {
-    if (path.endsWithPathParam()) {
+  Method? _generateDeleteMethod({
+    required String path,
+    required List<String> pathParams,
+    required List<String> headerParams,
+    required List<String> queryParams,
+    required String tag,
+    required bool methodAllowed,
+  }) {
+    if (methodAllowed) {
       return Method(
         tags: [tag],
         parameters: pathParams
@@ -277,15 +300,16 @@ class GenCommand extends Command<int> {
   ///
   /// Generate a POST method for [path]
   ///
-  Method? _generatePostMethod(
-    String path,
-    List<String> pathParams,
-    List<String> headerParams,
-    List<String> queryParams,
-    String tag,
-    bool existingSchema,
-  ) {
-    if (!path.endsWithPathParam()) {
+  Method? _generatePostMethod({
+    required String path,
+    required List<String> pathParams,
+    required List<String> headerParams,
+    required List<String> queryParams,
+    required String tag,
+    required bool existingSchema,
+    required bool methodAllowed,
+  }) {
+    if (methodAllowed) {
       final schemaReference = existingSchema
           ? Schema(ref: '#/components/schemas/$tag')
           : Schema.emptyObject();
@@ -345,15 +369,16 @@ class GenCommand extends Command<int> {
   ///
   /// Generate a PUT method for [path]
   ///
-  Method? _generatePutMethod(
-    String path,
-    List<String> pathParams,
-    List<String> headerParams,
-    List<String> queryParams,
-    String tag,
-    bool existingSchema,
-  ) {
-    if (!path.endsWithPathParam()) {
+  Method? _generatePutMethod({
+    required String path,
+    required List<String> pathParams,
+    required List<String> headerParams,
+    required List<String> queryParams,
+    required String tag,
+    required bool existingSchema,
+    required bool methodAllowed,
+  }) {
+    if (methodAllowed) {
       final schemaReference = existingSchema
           ? Schema(ref: '#/components/schemas/$tag')
           : Schema.emptyObject();
@@ -418,19 +443,24 @@ class GenCommand extends Command<int> {
   ///
   /// Generate a GET method for [path]
   ///
-  Method _generateGetMethod(
-    String path,
-    List<String> pathParams,
-    List<String> headerParams,
-    List<String> queryParams,
-    String tag,
-    bool existingSchema,
-  ) {
+  Method? _generateGetMethod({
+    required String path,
+    required List<String> pathParams,
+    required List<String> headerParams,
+    required List<String> queryParams,
+    required String tag,
+    required bool existingSchema,
+    required bool methodAllowed,
+  }) {
     final isList = !path.endsWithPathParam();
 
     final schemaReference = existingSchema
         ? Schema(ref: '#/components/schemas/$tag')
         : Schema.emptyObject();
+
+    if (!methodAllowed) {
+      return null;
+    }
 
     return Method(
       tags: [tag],
@@ -488,12 +518,17 @@ class GenCommand extends Command<int> {
   ///
   /// Generate a HEAD method for [path]
   ///
-  Method _generateHeadMethod(
-    String path,
-    List<String> pathParams,
-    List<String> headerParams,
-    String tag,
-  ) {
+  Method? _generateHeadMethod({
+    required String path,
+    required List<String> pathParams,
+    required List<String> headerParams,
+    required String tag,
+    required bool methodAllowed,
+  }) {
+    if (!methodAllowed) {
+      return null;
+    }
+
     return Method(
       tags: [tag],
       parameters: pathParams
@@ -530,12 +565,16 @@ class GenCommand extends Command<int> {
   ///
   /// Generate a OPTION method for [path]
   ///
-  Method _generateOptionMethod(
-    String path,
-    List<String> pathParams,
-    List<String> headerParams,
-    String tag,
-  ) {
+  Method? _generateOptionMethod({
+    required String path,
+    required List<String> pathParams,
+    required List<String> headerParams,
+    required String tag,
+    required bool methodAllowed,
+  }) {
+    if (!methodAllowed) {
+      return null;
+    }
     return Method(
       tags: [tag],
       parameters: pathParams
@@ -575,8 +614,28 @@ class GenCommand extends Command<int> {
   }
 
   ///
+  /// Extract allowed methods from [routeFile]
+  /// like /// @Allow(OPTIONS, GET, HEAD, POST, PUT, PATCH, DELETE)
+  /// will return ['options', 'get', 'head', 'post', 'put', 'patch', 'delete']
+  /// if no allowed methods is found, return an empty list
+  ///
+  List<String> _extractAllowMethods(String routeFile) {
+    final file = _fileSystem.file(routeFile);
+    final content = file.readAsStringSync();
+    final matches = RegExp(r'///\s*@Allow\((.*)\)').allMatches(content);
+    return matches
+        .map(
+          (e) => e.group(1)!,
+        ) // Match found group (@Allow(OPTIONS, GET) => OPTIONS, GET)
+        .map((it) => it.split(','))
+        .expand((it) => it) // flatten List<List<String>> => List<String>
+        .map((it) => it.trim().toLowerCase()) // lowercase (GET => get)
+        .toList();
+  }
+
+  ///
   /// Extract query parameters from [routeFile]
-  /// like /// @Query('completed')
+  /// like /// @Query(completed)
   /// will return ['completed']
   /// if no query is found, return an empty list
   ///

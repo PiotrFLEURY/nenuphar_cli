@@ -106,7 +106,7 @@ void main() {
       expect(openApi.tags![0].name, equals('todos'));
 
       expect(openApi.paths, isNotEmpty);
-      expect(openApi.paths['/todos']?.delete, isNull);
+      expect(openApi.paths['/todos']?.delete, isNotNull);
       expect(openApi.paths['/todos']?.get, isNotNull);
       expect(openApi.paths['/todos']?.head, isNotNull);
       expect(openApi.paths['/todos']?.options, isNotNull);
@@ -244,6 +244,60 @@ Future<Response> onRequest(RequestContext context) async {
       );
     });
 
+    test('Generates only allowed methods if @Allow tag exists', () async {
+      // GIVEN
+      final publicDir = memoryFileSystem.directory('public');
+      if (!publicDir.existsSync()) {
+        publicDir.createSync();
+      }
+      memoryFileSystem.file('nenuphar.json')
+        ..createSync()
+        ..writeAsStringSync(
+          const JsonEncoder.withIndent('  ').convert(OpenApi()),
+        );
+
+      memoryFileSystem.file('/routes/index.dart').createSync(recursive: true);
+
+      const todosFileContent = '''
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:dart_frog/dart_frog.dart';
+
+/// @Allow(GET, post, Put, DeLeTe)
+Future<Response> onRequest(RequestContext context) async {
+  return Response(statusCode: HttpStatus.ok);
+}
+''';
+
+      memoryFileSystem.file('/routes/todos.dart')
+        ..createSync(recursive: true)
+        ..writeAsStringSync(todosFileContent);
+
+      // WHEN
+      final result = await commandRunner.run(['gen']);
+
+      // THEN
+      expect(result, equals(ExitCode.success.code));
+      final openApiFile = memoryFileSystem.file('/public/openapi.json');
+      expect(openApiFile.existsSync(), isTrue);
+      final openApi = OpenApi.fromJson(
+        jsonDecode(
+          openApiFile.readAsStringSync(),
+        ) as Map<String, dynamic>,
+      );
+
+      expect(openApi.paths, isNotEmpty);
+      expect(openApi.paths['/todos']?.get, isNotNull);
+      expect(openApi.paths['/todos']?.post, isNotNull);
+      expect(openApi.paths['/todos']?.put, isNotNull);
+      expect(openApi.paths['/todos']?.delete, isNotNull);
+      expect(openApi.paths['/todos']?.head, isNull);
+      expect(openApi.paths['/todos']?.options, isNull);
+      expect(openApi.paths['/todos']?.patch, isNull);
+      expect(openApi.paths['/todos']?.trace, isNull);
+    });
+
     test(
         'Contains OPTION GET HEAD POST PUT PATCH for /todos route (with components)',
         () async {
@@ -294,7 +348,7 @@ Future<Response> onRequest(RequestContext context) async {
       expect(openApi.tags![0].name, equals('todos'));
 
       expect(openApi.paths, isNotEmpty);
-      expect(openApi.paths['/todos']?.delete, isNull);
+      expect(openApi.paths['/todos']?.delete, isNotNull);
       expect(openApi.paths['/todos']?.get, isNotNull);
       expect(openApi.paths['/todos']?.head, isNotNull);
       expect(openApi.paths['/todos']?.options, isNotNull);
@@ -362,7 +416,7 @@ Future<Response> onRequest(RequestContext context) async {
       expect(openApi.tags![0].name, equals('todos'));
 
       expect(openApi.paths, isNotEmpty);
-      expect(openApi.paths['/todos']?.delete, isNull);
+      expect(openApi.paths['/todos']?.delete, isNotNull);
       expect(openApi.paths['/todos']?.get, isNotNull);
       expect(openApi.paths['/todos']?.head, isNotNull);
       expect(openApi.paths['/todos']?.options, isNotNull);
@@ -375,9 +429,9 @@ Future<Response> onRequest(RequestContext context) async {
       expect(openApi.paths['/todos/{title}']?.get, isNotNull);
       expect(openApi.paths['/todos/{title}']?.head, isNotNull);
       expect(openApi.paths['/todos/{title}']?.options, isNotNull);
-      expect(openApi.paths['/todos/{title}']?.patch, isNull);
-      expect(openApi.paths['/todos/{title}']?.post, isNull);
-      expect(openApi.paths['/todos/{title}']?.put, isNull);
+      expect(openApi.paths['/todos/{title}']?.patch, isNotNull);
+      expect(openApi.paths['/todos/{title}']?.post, isNotNull);
+      expect(openApi.paths['/todos/{title}']?.put, isNotNull);
       expect(openApi.paths['/todos/{title}']?.trace, isNull);
 
       expect(openApi.components?.schemas, isNotEmpty);

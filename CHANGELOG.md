@@ -1,5 +1,9 @@
 # nenuphar_cli changelog
 
+## 0.0.9 (2023-08-15)
+
+* Add @Allow tag to specify allowed methods
+
 ## 0.0.8 (2023-08-15)
 
 * Add methods OPTION, HEAD, PATCH
