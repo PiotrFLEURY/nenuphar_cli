@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:nenuphar_cli/src/models/media_type.dart';
+import 'package:nenuphar_cli/src/models/models.dart';
 
 part 'response_body.g.dart';
 
@@ -7,6 +7,7 @@ part 'response_body.g.dart';
 class ResponseBody {
   const ResponseBody({
     this.description = '',
+    this.headers = const {},
     this.content = const {},
   });
 
@@ -14,6 +15,7 @@ class ResponseBody {
       _$ResponseBodyFromJson(json);
 
   final String description;
+  final Map<String, Schema> headers;
   final Map<String, MediaType> content;
 
   Map<String, dynamic> toJson() => _$ResponseBodyToJson(this);

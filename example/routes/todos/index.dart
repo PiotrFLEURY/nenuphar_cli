@@ -17,25 +17,55 @@ Future<Response> onRequest(RequestContext context) async {
 
   switch (context.request.method) {
     case HttpMethod.get:
+    case HttpMethod.head:
+      String jsonPayload;
       // Get the completed query parameter
       final completed = context.request.uri.queryParameters['completed'];
       if (completed != null) {
         final todos = todosService.getTodosByCompleted(
           completed: completed == 'true',
         );
-        return Response(body: jsonEncode(todos));
+        jsonPayload = jsonEncode(todos);
       }
-      return Response(body: jsonEncode(todosService.todos));
+      jsonPayload = jsonEncode(todosService.todos);
+
+      if (context.request.method == HttpMethod.head) {
+        return Response(
+          headers: {
+            HttpHeaders.contentLengthHeader:
+                utf8.encode(jsonPayload).length.toString(),
+          },
+        );
+      }
+      return Response(
+        body: jsonPayload,
+        headers: {
+          HttpHeaders.contentTypeHeader: 'application/json',
+        },
+      );
     case HttpMethod.post:
       final jsonBody = await context.request.body();
       final todo = Todo.fromJson(jsonDecode(jsonBody) as Map<String, dynamic>);
       todosService.add(todo);
       return Response(body: jsonEncode(todosService.todos));
-    case HttpMethod.head:
+
     case HttpMethod.options:
+      return Response(
+        statusCode: HttpStatus.noContent,
+        headers: {
+          HttpHeaders.allowHeader: [
+            HttpMethod.get.value,
+            HttpMethod.head.value,
+            HttpMethod.post.value,
+            HttpMethod.put.value,
+            HttpMethod.patch.value,
+            HttpMethod.options.value,
+          ].join(', '),
+        },
+      );
+    case HttpMethod.put:
     case HttpMethod.patch:
     case HttpMethod.delete:
-    case HttpMethod.put:
       return Response(statusCode: HttpStatus.methodNotAllowed);
   }
 }

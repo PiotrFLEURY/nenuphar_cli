@@ -76,9 +76,10 @@ class GenCommand extends Command<int> {
   OpenApi _generateOpenApi(List<String> routes) {
     final paths = <String, Paths>{};
     final tags = <Tag>[];
+    final schemas = <String, Schema>{};
 
     for (final route in routes) {
-      _parseRoute(route, tags, paths);
+      _parseRoute(route, tags, paths, schemas);
     }
 
     // Read nenuphar.json file
@@ -99,10 +100,17 @@ class GenCommand extends Command<int> {
     return openAPiBase
       ..tags = tags
       ..paths = paths
-      ..components = _generateComponents(tags);
+      ..components = Components(
+        schemas: schemas,
+      );
   }
 
-  void _parseRoute(String route, List<Tag> tags, Map<String, Paths> paths) {
+  void _parseRoute(
+    String route,
+    List<Tag> tags,
+    Map<String, Paths> paths,
+    Map<String, Schema> schemas,
+  ) {
     final path = route
         .replaceFirst('${_fileSystem.currentDirectory.path}/routes', '')
         .replaceFirst('/index.dart', '')
@@ -126,6 +134,10 @@ class GenCommand extends Command<int> {
         )
         .last;
 
+    if (!schemas.containsKey(tag)) {
+      _generateComponent(schemas, tag);
+    }
+
     if (!tags.any((e) => e.name == tag)) {
       tags.add(
         Tag(
@@ -140,11 +152,24 @@ class GenCommand extends Command<int> {
     final queryParams = _extractQueryParams(route);
 
     paths[path] = Paths(
+      options: _generateOptionMethod(
+        path,
+        pathParams,
+        headerParams,
+        tag,
+      ),
       get: _generateGetMethod(
         path,
         pathParams,
         headerParams,
         queryParams,
+        tag,
+        schemas.containsKey(tag),
+      ),
+      head: _generateHeadMethod(
+        path,
+        pathParams,
+        headerParams,
         tag,
       ),
       post: _generatePostMethod(
@@ -153,6 +178,7 @@ class GenCommand extends Command<int> {
         headerParams,
         queryParams,
         tag,
+        schemas.containsKey(tag),
       ),
       put: _generatePutMethod(
         path,
@@ -160,6 +186,15 @@ class GenCommand extends Command<int> {
         headerParams,
         queryParams,
         tag,
+        schemas.containsKey(tag),
+      ),
+      patch: _generatePutMethod(
+        path,
+        pathParams,
+        headerParams,
+        queryParams,
+        tag,
+        schemas.containsKey(tag),
       ),
       delete: _generateDeleteMethod(
         path,
@@ -171,32 +206,16 @@ class GenCommand extends Command<int> {
     );
   }
 
-  ///
-  /// Generate components from [tags]
-  /// by reading files from components/ folder
-  /// and generate schemas from them
-  /// and return a [Components] object
-  ///
-  Components _generateComponents(List<Tag> tags) {
-    // Read components files from components/ folder
-    // and generate schemas from them
-
-    final schemas = <String, Schema>{};
-
-    for (final tag in tags) {
-      // Read file
-      final file = _fileSystem.file(
-        '${_fileSystem.currentDirectory.path}/components/${tag.name}.json',
-      );
-      if (file.existsSync()) {
-        final json =
-            jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
-        final schema = Schema.fromJson(json);
-        schemas[tag.name] = schema;
-      }
+  void _generateComponent(Map<String, Schema> schemas, String tag) {
+    // Read file
+    final file = _fileSystem.file(
+      '${_fileSystem.currentDirectory.path}/components/$tag.json',
+    );
+    if (file.existsSync()) {
+      final json = jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
+      final schema = Schema.fromJson(json);
+      schemas[tag] = schema;
     }
-
-    return Components(schemas: schemas);
   }
 
   ///
@@ -264,8 +283,13 @@ class GenCommand extends Command<int> {
     List<String> headerParams,
     List<String> queryParams,
     String tag,
+    bool existingSchema,
   ) {
     if (!path.endsWithPathParam()) {
+      final schemaReference = existingSchema
+          ? Schema(ref: '#/components/schemas/$tag')
+          : Schema.emptyObject();
+
       return Method(
         tags: [tag],
         parameters: pathParams
@@ -304,9 +328,7 @@ class GenCommand extends Command<int> {
         requestBody: RequestBody(
           content: {
             'application/json': MediaType(
-              schema: Schema(
-                ref: '#/components/schemas/$tag',
-              ),
+              schema: schemaReference,
             ),
           },
         ),
@@ -329,8 +351,13 @@ class GenCommand extends Command<int> {
     List<String> headerParams,
     List<String> queryParams,
     String tag,
+    bool existingSchema,
   ) {
     if (!path.endsWithPathParam()) {
+      final schemaReference = existingSchema
+          ? Schema(ref: '#/components/schemas/$tag')
+          : Schema.emptyObject();
+
       return Method(
         tags: [tag],
         parameters: pathParams
@@ -369,9 +396,7 @@ class GenCommand extends Command<int> {
         requestBody: RequestBody(
           content: {
             'application/json': MediaType(
-              schema: Schema(
-                ref: '#/components/schemas/$tag',
-              ),
+              schema: schemaReference,
             ),
           },
         ),
@@ -380,9 +405,7 @@ class GenCommand extends Command<int> {
             description: 'A list of $tag.',
             content: {
               'application/json': MediaType(
-                schema: Schema(
-                  ref: '#/components/schemas/$tag',
-                ),
+                schema: schemaReference,
               ),
             },
           ),
@@ -401,8 +424,13 @@ class GenCommand extends Command<int> {
     List<String> headerParams,
     List<String> queryParams,
     String tag,
+    bool existingSchema,
   ) {
     final isList = !path.endsWithPathParam();
+
+    final schemaReference = existingSchema
+        ? Schema(ref: '#/components/schemas/$tag')
+        : Schema.emptyObject();
 
     return Method(
       tags: [tag],
@@ -447,13 +475,98 @@ class GenCommand extends Command<int> {
               schema: isList
                   ? Schema(
                       type: 'array',
-                      items: Schema(
-                        ref: '#/components/schemas/$tag',
-                      ),
+                      items: schemaReference,
                     )
-                  : Schema(
-                      ref: '#/components/schemas/$tag',
-                    ),
+                  : schemaReference,
+            ),
+          },
+        ),
+      },
+    );
+  }
+
+  ///
+  /// Generate a HEAD method for [path]
+  ///
+  Method _generateHeadMethod(
+    String path,
+    List<String> pathParams,
+    List<String> headerParams,
+    String tag,
+  ) {
+    return Method(
+      tags: [tag],
+      parameters: pathParams
+          .map(
+            (e) => Parameter(
+              name: e,
+              inLocation: InLocation.path,
+              required: true,
+              schema: const Schema(
+                type: 'string',
+              ),
+            ),
+          )
+          .toList()
+        ..addAll(
+          headerParams.map(
+            (e) => Parameter(
+              name: e,
+              inLocation: InLocation.header,
+              schema: const Schema(
+                type: 'string',
+              ),
+            ),
+          ),
+        ),
+      responses: {
+        200: ResponseBody(
+          description: 'Meta informations about $tag.',
+        ),
+      },
+    );
+  }
+
+  ///
+  /// Generate a OPTION method for [path]
+  ///
+  Method _generateOptionMethod(
+    String path,
+    List<String> pathParams,
+    List<String> headerParams,
+    String tag,
+  ) {
+    return Method(
+      tags: [tag],
+      parameters: pathParams
+          .map(
+            (e) => Parameter(
+              name: e,
+              inLocation: InLocation.path,
+              required: true,
+              schema: const Schema(
+                type: 'string',
+              ),
+            ),
+          )
+          .toList()
+        ..addAll(
+          headerParams.map(
+            (e) => Parameter(
+              name: e,
+              inLocation: InLocation.header,
+              schema: const Schema(
+                type: 'string',
+              ),
+            ),
+          ),
+        ),
+      responses: {
+        204: ResponseBody(
+          description: 'Allowed HTTP methods for $path',
+          headers: {
+            'Allow': const Schema(
+              type: 'string',
             ),
           },
         ),

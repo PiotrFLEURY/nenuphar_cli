@@ -1,6 +1,6 @@
 name: nenuphar_cli
 description: An openapi generation CLI for Dart Frog created by Very Good CLI.
-version: 0.0.7
+version: 0.0.8
 homepage: https://piotrfleury.github.io/nenuphar_cli/
 repository: https://github.com/PiotrFLEURY/nenuphar_cli
 

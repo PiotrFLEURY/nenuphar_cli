@@ -73,7 +73,9 @@ void main() {
       expect(openApi.components?.schemas, isEmpty);
     });
 
-    test('Contains GET POST PUT for /todos route (no components)', () async {
+    test(
+        'Contains OPTION HEAD GET POST PUT PATCH for /todos route (no components)',
+        () async {
       // GIVEN
       final publicDir = memoryFileSystem.directory('public');
       if (!publicDir.existsSync()) {
@@ -106,9 +108,9 @@ void main() {
       expect(openApi.paths, isNotEmpty);
       expect(openApi.paths['/todos']?.delete, isNull);
       expect(openApi.paths['/todos']?.get, isNotNull);
-      expect(openApi.paths['/todos']?.head, isNull);
-      expect(openApi.paths['/todos']?.options, isNull);
-      expect(openApi.paths['/todos']?.patch, isNull);
+      expect(openApi.paths['/todos']?.head, isNotNull);
+      expect(openApi.paths['/todos']?.options, isNotNull);
+      expect(openApi.paths['/todos']?.patch, isNotNull);
       expect(openApi.paths['/todos']?.post, isNotNull);
       expect(openApi.paths['/todos']?.put, isNotNull);
       expect(openApi.paths['/todos']?.trace, isNull);
@@ -242,7 +244,9 @@ Future<Response> onRequest(RequestContext context) async {
       );
     });
 
-    test('Contains GET POST PUT for /todos route (with components)', () async {
+    test(
+        'Contains OPTION GET HEAD POST PUT PATCH for /todos route (with components)',
+        () async {
       // GIVEN
       final publicDir = memoryFileSystem.directory('public');
       if (!publicDir.existsSync()) {
@@ -292,9 +296,9 @@ Future<Response> onRequest(RequestContext context) async {
       expect(openApi.paths, isNotEmpty);
       expect(openApi.paths['/todos']?.delete, isNull);
       expect(openApi.paths['/todos']?.get, isNotNull);
-      expect(openApi.paths['/todos']?.head, isNull);
-      expect(openApi.paths['/todos']?.options, isNull);
-      expect(openApi.paths['/todos']?.patch, isNull);
+      expect(openApi.paths['/todos']?.head, isNotNull);
+      expect(openApi.paths['/todos']?.options, isNotNull);
+      expect(openApi.paths['/todos']?.patch, isNotNull);
       expect(openApi.paths['/todos']?.post, isNotNull);
       expect(openApi.paths['/todos']?.put, isNotNull);
       expect(openApi.paths['/todos']?.trace, isNull);
@@ -304,7 +308,7 @@ Future<Response> onRequest(RequestContext context) async {
     });
 
     test(
-        'Contains GET POST PUT DELETE for /todos/[title] route (with components)',
+        'Contains OPTION GET HEAD POST DELETE for /todos/[title] route (with components)',
         () async {
       // GIVEN
       final publicDir = memoryFileSystem.directory('public');
@@ -360,17 +364,17 @@ Future<Response> onRequest(RequestContext context) async {
       expect(openApi.paths, isNotEmpty);
       expect(openApi.paths['/todos']?.delete, isNull);
       expect(openApi.paths['/todos']?.get, isNotNull);
-      expect(openApi.paths['/todos']?.head, isNull);
-      expect(openApi.paths['/todos']?.options, isNull);
-      expect(openApi.paths['/todos']?.patch, isNull);
+      expect(openApi.paths['/todos']?.head, isNotNull);
+      expect(openApi.paths['/todos']?.options, isNotNull);
+      expect(openApi.paths['/todos']?.patch, isNotNull);
       expect(openApi.paths['/todos']?.post, isNotNull);
       expect(openApi.paths['/todos']?.put, isNotNull);
       expect(openApi.paths['/todos']?.trace, isNull);
 
       expect(openApi.paths['/todos/{title}']?.delete, isNotNull);
       expect(openApi.paths['/todos/{title}']?.get, isNotNull);
-      expect(openApi.paths['/todos/{title}']?.head, isNull);
-      expect(openApi.paths['/todos/{title}']?.options, isNull);
+      expect(openApi.paths['/todos/{title}']?.head, isNotNull);
+      expect(openApi.paths['/todos/{title}']?.options, isNotNull);
       expect(openApi.paths['/todos/{title}']?.patch, isNull);
       expect(openApi.paths['/todos/{title}']?.post, isNull);
       expect(openApi.paths['/todos/{title}']?.put, isNull);
