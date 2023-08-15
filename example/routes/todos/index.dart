@@ -8,6 +8,10 @@ import 'package:example/services/todo_service.dart';
 ///
 /// The /todos routes
 ///
+/// @Allow(GET, HEAD) - Allow the GET, HEAD methods
+///
+/// @Allow(POST, OPTIONS) - Allow the POST and OPTIONS methods
+///
 /// @Header(User-Name) - The user name header
 ///
 /// @Query(completed) - The completed query parameter
@@ -57,8 +61,6 @@ Future<Response> onRequest(RequestContext context) async {
             HttpMethod.get.value,
             HttpMethod.head.value,
             HttpMethod.post.value,
-            HttpMethod.put.value,
-            HttpMethod.patch.value,
             HttpMethod.options.value,
           ].join(', '),
         },

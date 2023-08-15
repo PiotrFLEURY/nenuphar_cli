@@ -7,6 +7,8 @@ import 'package:example/services/todo_service.dart';
 ///
 /// The /todos/[id] routes
 ///
+/// @Allow(GET, DELETE) - Allow only GET and DELETE methods
+///
 /// @Header(User-Name) - The user name header
 ///
 ///
