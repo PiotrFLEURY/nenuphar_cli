@@ -17,6 +17,8 @@ class Schema {
 
   factory Schema.fromJson(Map<String, dynamic> json) => _$SchemaFromJson(json);
 
+  factory Schema.emptyObject() => const Schema(type: 'object');
+
   final String? type;
   final String? format;
 
