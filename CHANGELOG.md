@@ -1,5 +1,9 @@
 # nenuphar_cli changelog
 
+## 0.0.8 (2023-08-15)
+
+* Add methods OPTION, HEAD, PATCH
+
 ## 0.0.7 (2023-08-13)
 
 * Add nenuphar.json file for base OpenAPI configuration
