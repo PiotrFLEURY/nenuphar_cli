@@ -97,15 +97,18 @@ void main() {
       expect(result, equals(ExitCode.success.code));
       final openApiFile = memoryFileSystem.file('/public/openapi.json');
       expect(openApiFile.existsSync(), isTrue);
+      final openApiJsonString = openApiFile.readAsStringSync();
       final openApi = OpenApi.fromJson(
         jsonDecode(
-          openApiFile.readAsStringSync(),
+          openApiJsonString,
         ) as Map<String, dynamic>,
       );
       expect(openApi.tags, isNotEmpty);
       expect(openApi.tags![0].name, equals('todos'));
 
       expect(openApi.paths, isNotEmpty);
+      // Ensure Windows style filesystem does not propagage \\ in path list
+      expect(openApi.paths.keys.any((path) => path.contains(r'\')), false);
       expect(openApi.paths['/todos']?.delete, isNotNull);
       expect(openApi.paths['/todos']?.get, isNotNull);
       expect(openApi.paths['/todos']?.head, isNotNull);
@@ -436,6 +439,128 @@ Future<Response> onRequest(RequestContext context) async {
 
       expect(openApi.components?.schemas, isNotEmpty);
       expect(openApi.components?.schemas['todos'], isNotNull);
+    });
+
+    test(
+        'routes/[message].dart should generate OpenApi with no tag (issue #23)',
+        () async {
+      // GIVEN
+      final publicDir = memoryFileSystem.directory('public');
+      if (!publicDir.existsSync()) {
+        publicDir.createSync();
+      }
+      memoryFileSystem.file('nenuphar.json')
+        ..createSync()
+        ..writeAsStringSync(
+          const JsonEncoder.withIndent('  ').convert(OpenApi()),
+        );
+
+      const messageFileContent = '''
+import 'package:dart_frog/dart_frog.dart';
+
+Response onRequest(RequestContext context, String message) {
+  return Response(body: message);
+}
+''';
+
+      memoryFileSystem.file('/routes/[message].dart')
+        ..createSync(recursive: true)
+        ..writeAsStringSync(messageFileContent);
+
+      // WHEN
+      final result = await commandRunner.run(['gen']);
+
+      // THEN
+      expect(result, equals(ExitCode.success.code));
+      final openApiFile = memoryFileSystem.file('/public/openapi.json');
+      expect(openApiFile.existsSync(), isTrue);
+      final openApi = OpenApi.fromJson(
+        jsonDecode(
+          openApiFile.readAsStringSync(),
+        ) as Map<String, dynamic>,
+      );
+      expect(openApi.tags, isNotEmpty);
+
+      expect(openApi.paths['/{message}']?.delete, isNotNull);
+      expect(openApi.paths['/{message}']?.get, isNotNull);
+      expect(openApi.paths['/{message}']?.head, isNotNull);
+      expect(openApi.paths['/{message}']?.options, isNotNull);
+      expect(openApi.paths['/{message}']?.patch, isNotNull);
+      expect(openApi.paths['/{message}']?.post, isNotNull);
+      expect(openApi.paths['/{message}']?.put, isNotNull);
+      expect(openApi.paths['/{message}']?.trace, isNull);
+
+      expect(openApi.paths['/{message}']?.delete?.tags, ['']);
+      expect(openApi.paths['/{message}']?.get?.tags, ['']);
+      expect(openApi.paths['/{message}']?.head?.tags, ['']);
+      expect(openApi.paths['/{message}']?.options?.tags, ['']);
+      expect(openApi.paths['/{message}']?.patch?.tags, ['']);
+      expect(openApi.paths['/{message}']?.post?.tags, ['']);
+      expect(openApi.paths['/{message}']?.put?.tags, ['']);
+    });
+
+    test('Should generate for auth routes (issue #21)', () async {
+      // GIVEN
+      final publicDir = memoryFileSystem.directory(Uri.directory('public'));
+      if (!publicDir.existsSync()) {
+        publicDir.createSync();
+      }
+      memoryFileSystem.file(Uri.file('nenuphar.json'))
+        ..createSync()
+        ..writeAsStringSync(
+          const JsonEncoder.withIndent('  ').convert(OpenApi()),
+        );
+
+      const loginFileContent = '''
+import 'dart:io';
+import 'package:dart_frog/dart_frog.dart';
+import 'package:travel_plan/controller/auth/auth_controller.dart';
+
+///
+/// The /api/auth/login routes
+///
+/// @Allow(POST) - Allow only POST methods
+///
+/// @Header(User-Name) - The user name header
+///
+///
+Future<Response> onRequest(RequestContext context) async {
+  return switch(context.request.method) {
+    HttpMethod.post => AuthController.instance.login(context),
+    _ => Future.value(Response(statusCode: HttpStatus.methodNotAllowed))
+  };
+}
+''';
+
+      memoryFileSystem.file(Uri.file('routes/api/auth/login.dart'))
+        ..createSync(recursive: true)
+        ..writeAsStringSync(loginFileContent);
+
+      const registerFileContent = '''
+import 'dart:io';
+import 'package:dart_frog/dart_frog.dart';
+import 'package:travel_plan/controller/auth/auth_controller.dart';
+
+Future<Response> onRequest(RequestContext context) async {
+  return switch(context.request.method) {
+    HttpMethod.post => AuthController.instance.register(context),
+    _ => Future.value(Response(statusCode: HttpStatus.methodNotAllowed))
+  };
+}
+''';
+
+      memoryFileSystem.file(Uri.file('routes/api/auth/register.dart'))
+        ..createSync(recursive: true)
+        ..writeAsStringSync(registerFileContent);
+
+      // WHEN
+      final result = await commandRunner.run(['gen']);
+
+      // THEN
+      expect(result, equals(ExitCode.success.code));
+      final openApiFile =
+          memoryFileSystem.file(Uri.file('/public/openapi.json'));
+      expect(openApiFile.existsSync(), isTrue);
     });
   });
 }

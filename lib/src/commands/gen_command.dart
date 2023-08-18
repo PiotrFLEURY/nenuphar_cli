@@ -4,6 +4,7 @@ import 'package:file/file.dart';
 import 'package:mason_logger/mason_logger.dart';
 import 'package:nenuphar_cli/src/extensions/string_extension.dart';
 import 'package:nenuphar_cli/src/models/models.dart';
+import 'package:nenuphar_cli/src/tooling.dart';
 
 /// {@template sample_command}
 ///
@@ -50,14 +51,16 @@ class GenCommand extends Command<int> {
     }
 
     // List every *.dart files in routes folder
-    final routes = _locateRoutes('${_fileSystem.currentDirectory.path}/routes');
+    final routes = _locateRoutes(
+      _fileSystem.currentDirectory.childDirectory('routes').path,
+    );
 
     _logger.info('Found ${routes.join('\n')} routes');
 
     try {
       final openApi = _generateOpenApi(routes);
 
-      final json = jsonEncode(openApi.toJson());
+      final json = jsonPrettyEncoder.convert(openApi.toJson());
 
       // save to file
       final output = argResults?['output'] ?? 'public/openapi.json';
@@ -109,8 +112,14 @@ class GenCommand extends Command<int> {
     Map<String, Paths> paths,
     Map<String, Schema> schemas,
   ) {
+    _logger.info(' parsing route: $route');
+
     final path = route
-        .replaceFirst('${_fileSystem.currentDirectory.path}/routes', '')
+        .replaceFirst(
+          _fileSystem.currentDirectory.childDirectory('routes').path,
+          '',
+        )
+        .replaceAll(r'\', '/')
         .replaceFirst('/index.dart', '')
         .replaceFirst('.dart', '')
         .replaceAll('[', '{')
@@ -123,14 +132,15 @@ class GenCommand extends Command<int> {
     _logger.info(' evaluating path: $path');
 
     final tag = path
-        .split('/')
-        .where((segment) => segment.isNotEmpty)
-        .where(
-          (segment) => !segment.contains(
-            RegExp(r'\{.*\}*'),
-          ),
-        )
-        .last;
+            .split('/')
+            .where((segment) => segment.isNotEmpty)
+            .where(
+              (segment) => !segment.contains(
+                RegExp(r'\{.*\}*'),
+              ),
+            )
+            .lastOrNull ??
+        '';
 
     if (!schemas.containsKey(tag)) {
       _generateComponent(schemas, tag);
