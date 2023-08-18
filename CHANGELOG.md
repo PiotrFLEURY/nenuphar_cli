@@ -4,7 +4,7 @@
 
 * Fix tag parsing for root dynamic route
 * Pretty print openapi.json file content
-* Secure routes path parsing using filesystem instead of String contactenation
+* Secure routes path parsing using filesystem instead of String concatenation
 * Convert `\` file path separators to `/` API path separators (fixes #22)
 * Add some unit tests to secure Windows filesystem style issues (fixes #21 #23)
 
