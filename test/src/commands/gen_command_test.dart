@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
@@ -97,15 +98,18 @@ void main() {
       expect(result, equals(ExitCode.success.code));
       final openApiFile = memoryFileSystem.file('/public/openapi.json');
       expect(openApiFile.existsSync(), isTrue);
+      final openApiJsonString = openApiFile.readAsStringSync();
       final openApi = OpenApi.fromJson(
         jsonDecode(
-          openApiFile.readAsStringSync(),
+          openApiJsonString,
         ) as Map<String, dynamic>,
       );
       expect(openApi.tags, isNotEmpty);
       expect(openApi.tags![0].name, equals('todos'));
 
       expect(openApi.paths, isNotEmpty);
+      // Ensure Windows style filesystem does not propagage \\ in path list
+      expect(openApi.paths.keys.any((path) => path.contains(r'\')), false);
       expect(openApi.paths['/todos']?.delete, isNotNull);
       expect(openApi.paths['/todos']?.get, isNotNull);
       expect(openApi.paths['/todos']?.head, isNotNull);

@@ -4,6 +4,7 @@ import 'package:args/command_runner.dart';
 import 'package:file/file.dart';
 import 'package:mason_logger/mason_logger.dart';
 import 'package:nenuphar_cli/src/models/models.dart';
+import 'package:nenuphar_cli/src/tooling.dart';
 
 /// {@template sample_command}
 ///
@@ -96,9 +97,7 @@ class InitCommand extends Command<int> {
     } else {
       nenupharJson
         ..createSync()
-        ..writeAsStringSync(
-          const JsonEncoder.withIndent('  ').convert(OpenApi()),
-        );
+        ..writeAsStringSync(jsonPrettyEncoder.convert(OpenApi()));
     }
 
     return ExitCode.success.code;
