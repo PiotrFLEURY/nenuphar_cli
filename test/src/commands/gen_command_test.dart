@@ -437,5 +437,61 @@ Future<Response> onRequest(RequestContext context) async {
       expect(openApi.components?.schemas, isNotEmpty);
       expect(openApi.components?.schemas['todos'], isNotNull);
     });
+
+    test('routes/[message].dart should generate OpenApi with no tag', () async {
+      // GIVEN
+      final publicDir = memoryFileSystem.directory('public');
+      if (!publicDir.existsSync()) {
+        publicDir.createSync();
+      }
+      memoryFileSystem.file('nenuphar.json')
+        ..createSync()
+        ..writeAsStringSync(
+          const JsonEncoder.withIndent('  ').convert(OpenApi()),
+        );
+
+      const messageFileContent = '''
+import 'package:dart_frog/dart_frog.dart';
+
+Response onRequest(RequestContext context, String message) {
+  return Response(body: message);
+}
+''';
+
+      memoryFileSystem.file('/routes/[message].dart')
+        ..createSync(recursive: true)
+        ..writeAsStringSync(messageFileContent);
+
+      // WHEN
+      final result = await commandRunner.run(['gen']);
+
+      // THEN
+      expect(result, equals(ExitCode.success.code));
+      final openApiFile = memoryFileSystem.file('/public/openapi.json');
+      expect(openApiFile.existsSync(), isTrue);
+      final openApi = OpenApi.fromJson(
+        jsonDecode(
+          openApiFile.readAsStringSync(),
+        ) as Map<String, dynamic>,
+      );
+      expect(openApi.tags, isNotEmpty);
+
+      expect(openApi.paths['/{message}']?.delete, isNotNull);
+      expect(openApi.paths['/{message}']?.get, isNotNull);
+      expect(openApi.paths['/{message}']?.head, isNotNull);
+      expect(openApi.paths['/{message}']?.options, isNotNull);
+      expect(openApi.paths['/{message}']?.patch, isNotNull);
+      expect(openApi.paths['/{message}']?.post, isNotNull);
+      expect(openApi.paths['/{message}']?.put, isNotNull);
+      expect(openApi.paths['/{message}']?.trace, isNull);
+
+      expect(openApi.paths['/{message}']?.delete?.tags, ['']);
+      expect(openApi.paths['/{message}']?.get?.tags, ['']);
+      expect(openApi.paths['/{message}']?.head?.tags, ['']);
+      expect(openApi.paths['/{message}']?.options?.tags, ['']);
+      expect(openApi.paths['/{message}']?.patch?.tags, ['']);
+      expect(openApi.paths['/{message}']?.post?.tags, ['']);
+      expect(openApi.paths['/{message}']?.put?.tags, ['']);
+    });
   });
 }

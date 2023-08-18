@@ -123,14 +123,15 @@ class GenCommand extends Command<int> {
     _logger.info(' evaluating path: $path');
 
     final tag = path
-        .split('/')
-        .where((segment) => segment.isNotEmpty)
-        .where(
-          (segment) => !segment.contains(
-            RegExp(r'\{.*\}*'),
-          ),
-        )
-        .last;
+            .split('/')
+            .where((segment) => segment.isNotEmpty)
+            .where(
+              (segment) => !segment.contains(
+                RegExp(r'\{.*\}*'),
+              ),
+            )
+            .lastOrNull ??
+        '';
 
     if (!schemas.containsKey(tag)) {
       _generateComponent(schemas, tag);
