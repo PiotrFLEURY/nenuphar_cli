@@ -1,5 +1,13 @@
 # nenuphar_cli changelog
 
+## 0.0.10 (2023-08-18)
+
+* Fix tag parsing for root dynamic route
+* Pretty print openapi.json file content
+* Secure routes path parsing using filesystem instead of String contactenation
+* Convert `\` file path separators to `/` API path separators (fixes #22)
+* Add some unit tests to secure Windows filesystem style issues (fixes #21 #23)
+
 ## 0.0.9 (2023-08-15)
 
 * Add @Allow tag to specify allowed methods
