@@ -438,7 +438,9 @@ Future<Response> onRequest(RequestContext context) async {
       expect(openApi.components?.schemas['todos'], isNotNull);
     });
 
-    test('routes/[message].dart should generate OpenApi with no tag', () async {
+    test(
+        'routes/[message].dart should generate OpenApi with no tag (issue #23)',
+        () async {
       // GIVEN
       final publicDir = memoryFileSystem.directory('public');
       if (!publicDir.existsSync()) {
@@ -492,6 +494,70 @@ Response onRequest(RequestContext context, String message) {
       expect(openApi.paths['/{message}']?.patch?.tags, ['']);
       expect(openApi.paths['/{message}']?.post?.tags, ['']);
       expect(openApi.paths['/{message}']?.put?.tags, ['']);
+    });
+
+    test('Should generate for auth routes (issue #21)', () async {
+      // GIVEN
+      final publicDir = memoryFileSystem.directory(Uri.directory('public'));
+      if (!publicDir.existsSync()) {
+        publicDir.createSync();
+      }
+      memoryFileSystem.file(Uri.file('nenuphar.json'))
+        ..createSync()
+        ..writeAsStringSync(
+          const JsonEncoder.withIndent('  ').convert(OpenApi()),
+        );
+
+      const loginFileContent = '''
+import 'dart:io';
+import 'package:dart_frog/dart_frog.dart';
+import 'package:travel_plan/controller/auth/auth_controller.dart';
+
+///
+/// The /api/auth/login routes
+///
+/// @Allow(POST) - Allow only POST methods
+///
+/// @Header(User-Name) - The user name header
+///
+///
+Future<Response> onRequest(RequestContext context) async {
+  return switch(context.request.method) {
+    HttpMethod.post => AuthController.instance.login(context),
+    _ => Future.value(Response(statusCode: HttpStatus.methodNotAllowed))
+  };
+}
+''';
+
+      memoryFileSystem.file(Uri.file('routes/api/auth/login.dart'))
+        ..createSync(recursive: true)
+        ..writeAsStringSync(loginFileContent);
+
+      const registerFileContent = '''
+import 'dart:io';
+import 'package:dart_frog/dart_frog.dart';
+import 'package:travel_plan/controller/auth/auth_controller.dart';
+
+Future<Response> onRequest(RequestContext context) async {
+  return switch(context.request.method) {
+    HttpMethod.post => AuthController.instance.register(context),
+    _ => Future.value(Response(statusCode: HttpStatus.methodNotAllowed))
+  };
+}
+''';
+
+      memoryFileSystem.file(Uri.file('routes/api/auth/register.dart'))
+        ..createSync(recursive: true)
+        ..writeAsStringSync(registerFileContent);
+
+      // WHEN
+      final result = await commandRunner.run(['gen']);
+
+      // THEN
+      expect(result, equals(ExitCode.success.code));
+      final openApiFile =
+          memoryFileSystem.file(Uri.file('/public/openapi.json'));
+      expect(openApiFile.existsSync(), isTrue);
     });
   });
 }
