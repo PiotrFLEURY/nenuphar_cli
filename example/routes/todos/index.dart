@@ -16,6 +16,16 @@ import 'package:example/services/todo_service.dart';
 ///
 /// @Query(completed) - The completed query parameter
 ///
+/// @Security(todos_basic_auth) - The basic auth security scheme defined in
+///   components/_security.dart
+///
+/// @Security(todos_oauth) - The oauth security scheme defined in
+///   components/_security.dart
+///
+/// @Scope(read:todos) - Read scope
+/// @Scope(write:todos) - Write scope
+///
+///
 Future<Response> onRequest(RequestContext context) async {
   final todosService = context.read<TodoService>();
 

@@ -1,5 +1,9 @@
 # nenuphar_cli changelog
 
+## 0.1.0 (2023-08-22)
+
+* Add security schemes
+
 ## 0.0.10 (2023-08-18)
 
 * Fix tag parsing for root dynamic route

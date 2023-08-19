@@ -48,6 +48,29 @@
           }
         }
       }
+    },
+    "securitySchemes": {
+      "todos_basic_auth": {
+        "type": "http",
+        "scheme": "basic"
+      },
+      "todos_api_key": {
+        "type": "apiKey",
+        "name": "api_key",
+        "in": "header"
+      },
+      "todos_oauth": {
+        "type": "oauth2",
+        "flows": {
+          "implicit": {
+            "authorizationUrl": "https://nenuphar.io/oauth/authorize",
+            "scopes": {
+              "write:todos": "modify todos",
+              "read:todos": "read your todos"
+            }
+          }
+        }
+      }
     }
   },
   "paths": {
@@ -90,6 +113,11 @@
               "type": "string"
             }
           }
+        ],
+        "security": [
+          {
+            "todos_api_key": []
+          }
         ]
       },
       "delete": {
@@ -123,6 +151,11 @@
             "schema": {
               "type": "string"
             }
+          }
+        ],
+        "security": [
+          {
+            "todos_api_key": []
           }
         ]
       }
@@ -169,6 +202,20 @@
               "type": "string"
             }
           }
+        ],
+        "security": [
+          {
+            "todos_basic_auth": [
+              "read:todos",
+              "write:todos"
+            ]
+          },
+          {
+            "todos_oauth": [
+              "read:todos",
+              "write:todos"
+            ]
+          }
         ]
       },
       "post": {
@@ -214,6 +261,20 @@
               "type": "string"
             }
           }
+        ],
+        "security": [
+          {
+            "todos_basic_auth": [
+              "read:todos",
+              "write:todos"
+            ]
+          },
+          {
+            "todos_oauth": [
+              "read:todos",
+              "write:todos"
+            ]
+          }
         ]
       },
       "head": {
@@ -238,6 +299,20 @@
               "type": "string"
             }
           }
+        ],
+        "security": [
+          {
+            "todos_basic_auth": [
+              "read:todos",
+              "write:todos"
+            ]
+          },
+          {
+            "todos_oauth": [
+              "read:todos",
+              "write:todos"
+            ]
+          }
         ]
       },
       "options": {
@@ -249,7 +324,10 @@
             "description": "Allowed HTTP methods for /todos",
             "headers": {
               "Allow": {
-                "type": "string"
+                "description": "Allowed HTTP methods for /todos",
+                "schema": {
+                  "type": "string"
+                }
               }
             },
             "content": {}
@@ -265,6 +343,20 @@
             "schema": {
               "type": "string"
             }
+          }
+        ],
+        "security": [
+          {
+            "todos_basic_auth": [
+              "read:todos",
+              "write:todos"
+            ]
+          },
+          {
+            "todos_oauth": [
+              "read:todos",
+              "write:todos"
+            ]
           }
         ]
       }

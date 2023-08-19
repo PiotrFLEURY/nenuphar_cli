@@ -11,9 +11,15 @@ Components _$ComponentsFromJson(Map<String, dynamic> json) => Components(
             (k, e) => MapEntry(k, Schema.fromJson(e as Map<String, dynamic>)),
           ) ??
           const {},
+      securitySchemes: (json['securitySchemes'] as Map<String, dynamic>?)?.map(
+            (k, e) =>
+                MapEntry(k, SecurityScheme.fromJson(e as Map<String, dynamic>)),
+          ) ??
+          const {},
     );
 
 Map<String, dynamic> _$ComponentsToJson(Components instance) =>
     <String, dynamic>{
       'schemas': instance.schemas,
+      'securitySchemes': instance.securitySchemes,
     };

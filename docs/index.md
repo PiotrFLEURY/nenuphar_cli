@@ -36,6 +36,10 @@ Generate your OpenAPI documentation in few steps:
   - [Query](#query)
   - [Path](#path)
   - [Body](#body)
+- [Security](#security)
+  - [Declare security schemes](#declare-security-schemes)
+  - [Use security in path](#use-security-in-path)
+  - [Use scopes in path](#use-scopes-in-path)
 - [Start your Dart Frog server](#start-your-dart-frog-server)
 - [Enjoy 🎉](#enjoy-)
 
@@ -281,6 +285,69 @@ Path parameters are automatically detected by nenuphar using the Dart Frog [Dyna
 ### Body
 
 Body parameters are generated using the [Resource components](#resources-components) declared in the `components/` folder.
+
+## Security
+
+If your API is secured, you can declare the security schemes and use them in your paths.
+
+### Declare security schemes
+
+To declare a security scheme, you need to create a `_security.json` file in the `components/` with the appropriate content.
+
+Supported security schemes are basic, apiKey and oauth2.
+
+```json
+{
+  "todos_basic_auth": {
+    "type": "http",
+    "scheme": "basic"
+  },
+  "todos_api_key": {
+    "type": "apiKey",
+    "name": "api_key",
+    "in": "header"
+  },
+  "todos_oauth": {
+    "type": "oauth2",
+    "flows": {
+      "implicit": {
+        "authorizationUrl": "https://nenuphar.io/oauth/authorize",
+        "scopes": {
+          "write:todos": "modify todos",
+          "read:todos": "read your todos"
+        }
+      }
+    }
+  }
+}
+```
+
+### Use security in path
+
+To use a security scheme in a path, you need to add the `@Security` tag to your documentation comment.
+
+The name of the security scheme is the value of the `@Security` tag.
+
+```dart
+/// @Security(todos_basic_auth)
+Future<Response> onRequest(RequestContext context) async {
+  // ...
+}
+```
+
+### Use scopes in path
+
+To use a scope in a path, you need to add the `@Scope` tag to your documentation comment.
+
+The name of the scope is the value of the `@Scope` tag.
+
+```dart
+/// @Security(todos_oauth)
+/// @Scope(read:todos)
+Future<Response> onRequest(RequestContext context) async {
+  // ...
+}
+```
 
 ## Start your Dart Frog server
 
