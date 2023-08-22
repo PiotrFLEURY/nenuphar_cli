@@ -562,5 +562,132 @@ Future<Response> onRequest(RequestContext context) async {
           memoryFileSystem.file(Uri.file('/public/openapi.json'));
       expect(openApiFile.existsSync(), isTrue);
     });
+
+    test('Generates security schemes with reference and scopes', () async {
+      // GIVEN
+      final publicDir = memoryFileSystem.directory('public');
+      if (!publicDir.existsSync()) {
+        publicDir.createSync();
+      }
+      memoryFileSystem.file('nenuphar.json')
+        ..createSync()
+        ..writeAsStringSync(
+          const JsonEncoder.withIndent('  ').convert(OpenApi()),
+        );
+
+      memoryFileSystem.file('/routes/index.dart').createSync(recursive: true);
+
+      const todosFileContent = '''
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:dart_frog/dart_frog.dart';
+
+/// @Security(oauth_security)
+/// @Scope(read:tests)
+/// @Scope(write:tests)
+Future<Response> onRequest(RequestContext context) async {
+  return Response(statusCode: HttpStatus.ok);
+}
+''';
+
+      memoryFileSystem.file('/routes/todos.dart')
+        ..createSync(recursive: true)
+        ..writeAsStringSync(todosFileContent);
+
+      const securityFileContent = '''
+{
+  "basic_auth": {
+    "type": "http",
+    "scheme": "basic"
+  },
+  "api_key": {
+    "type": "apiKey",
+    "name": "api_key",
+    "in": "header"
+  },
+  "oauth_security": {
+    "type": "oauth2",
+    "flows": {
+      "implicit": {
+        "authorizationUrl": "https://nenuphar.io/oauth/authorize",
+        "scopes": {
+          "write:tests": "modify tests",
+          "read:tests": "read your tests"
+        }
+      }
+    }
+  }
+}
+
+''';
+
+      memoryFileSystem.file('/components/_security.json')
+        ..createSync(recursive: true)
+        ..writeAsStringSync(securityFileContent);
+
+      // WHEN
+      final result = await commandRunner.run(['gen']);
+
+      // THEN
+      expect(result, equals(ExitCode.success.code));
+      final openApiFile = memoryFileSystem.file('/public/openapi.json');
+      expect(openApiFile.existsSync(), isTrue);
+      final openApi = OpenApi.fromJson(
+        jsonDecode(
+          openApiFile.readAsStringSync(),
+        ) as Map<String, dynamic>,
+      );
+
+      expect(openApi.paths, isNotEmpty);
+      final getMethod = openApi.paths['/todos']?.get;
+      expect(getMethod, isNotNull);
+      expect(getMethod?.security, isNotEmpty);
+      expect(getMethod?.security.first['oauth_security'], isNotNull);
+      expect(
+        getMethod?.security.first['oauth_security']?.contains('read:tests'),
+        isTrue,
+      );
+      expect(
+        getMethod?.security.first['oauth_security']?.contains('write:tests'),
+        isTrue,
+      );
+      expect(openApi.components?.securitySchemes, isNotEmpty);
+      expect(openApi.components?.securitySchemes['basic_auth']?.type, 'http');
+      expect(
+        openApi.components?.securitySchemes['basic_auth']?.scheme,
+        'basic',
+      );
+      expect(openApi.components?.securitySchemes['api_key']?.type, 'apiKey');
+      expect(
+        openApi.components?.securitySchemes['api_key']?.name,
+        'api_key',
+      );
+      expect(
+        openApi.components?.securitySchemes['api_key']?.inLocation,
+        'header',
+      );
+      expect(
+        openApi.components?.securitySchemes['oauth_security']?.type,
+        'oauth2',
+      );
+      expect(
+        openApi.components?.securitySchemes['oauth_security']?.flows?.implicit
+            ?.authorizationUrl,
+        'https://nenuphar.io/oauth/authorize',
+      );
+      expect(
+        openApi.components?.securitySchemes['oauth_security']?.flows?.implicit
+            ?.scopes
+            .containsKey('read:tests'),
+        isTrue,
+      );
+      expect(
+        openApi.components?.securitySchemes['oauth_security']?.flows?.implicit
+            ?.scopes
+            .containsKey('write:tests'),
+        isTrue,
+      );
+    });
   });
 }

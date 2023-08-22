@@ -24,6 +24,13 @@ Method _$MethodFromJson(Map<String, dynamic> json) => Method(
       parameters: (json['parameters'] as List<dynamic>?)
           ?.map((e) => Parameter.fromJson(e as Map<String, dynamic>))
           .toList(),
+      security: (json['security'] as List<dynamic>?)
+              ?.map((e) => (e as Map<String, dynamic>).map(
+                    (k, e) => MapEntry(k,
+                        (e as List<dynamic>).map((e) => e as String).toList()),
+                  ))
+              .toList() ??
+          const [],
     );
 
 Map<String, dynamic> _$MethodToJson(Method instance) {
@@ -43,5 +50,6 @@ Map<String, dynamic> _$MethodToJson(Method instance) {
   val['responses'] =
       instance.responses.map((k, e) => MapEntry(k.toString(), e));
   writeNotNull('parameters', instance.parameters);
+  val['security'] = instance.security;
   return val;
 }

@@ -98,11 +98,29 @@ class GenCommand extends Command<int> {
       ) as Map<String, dynamic>,
     );
 
+    final securityJsonFile =
+        _fileSystem.directory('components').childFile('_security.json');
+    var securitySchemes = <String, SecurityScheme>{};
+    if (securityJsonFile.existsSync()) {
+      final securityJson = jsonDecode(
+        securityJsonFile.readAsStringSync(),
+      ) as Map<String, dynamic>;
+      securitySchemes = securityJson.map(
+        (name, scheme) => MapEntry(
+          name,
+          SecurityScheme.fromJson(
+            scheme as Map<String, dynamic>,
+          ),
+        ),
+      );
+    }
+
     return openAPiBase
       ..tags = tags
       ..paths = paths
       ..components = Components(
         schemas: schemas,
+        securitySchemes: securitySchemes,
       );
   }
 
@@ -159,6 +177,8 @@ class GenCommand extends Command<int> {
     final headerParams = _extractHeaderParams(route);
     final queryParams = _extractQueryParams(route);
     final allowedMethods = _extractAllowMethods(route);
+    final securityNames = _extractSecurityNames(route);
+    final securityScopes = _extractSecurityScopes(route);
 
     if (allowedMethods.isEmpty) {
       _logger.info('No allowed methods found for $path');
@@ -183,6 +203,8 @@ class GenCommand extends Command<int> {
         headerParams: headerParams,
         tag: tag,
         methodAllowed: allowedMethods.contains('options'),
+        securityNames: securityNames,
+        securityScopes: securityScopes,
       ),
       get: _generateGetMethod(
         path: path,
@@ -192,6 +214,8 @@ class GenCommand extends Command<int> {
         tag: tag,
         existingSchema: schemas.containsKey(tag),
         methodAllowed: allowedMethods.contains('get'),
+        securityNames: securityNames,
+        securityScopes: securityScopes,
       ),
       head: _generateHeadMethod(
         path: path,
@@ -199,6 +223,8 @@ class GenCommand extends Command<int> {
         headerParams: headerParams,
         tag: tag,
         methodAllowed: allowedMethods.contains('head'),
+        securityNames: securityNames,
+        securityScopes: securityScopes,
       ),
       post: _generatePostMethod(
         path: path,
@@ -208,6 +234,8 @@ class GenCommand extends Command<int> {
         tag: tag,
         existingSchema: schemas.containsKey(tag),
         methodAllowed: allowedMethods.contains('post'),
+        securityNames: securityNames,
+        securityScopes: securityScopes,
       ),
       put: _generatePutMethod(
         path: path,
@@ -217,6 +245,8 @@ class GenCommand extends Command<int> {
         tag: tag,
         existingSchema: schemas.containsKey(tag),
         methodAllowed: allowedMethods.contains('put'),
+        securityNames: securityNames,
+        securityScopes: securityScopes,
       ),
       patch: _generatePutMethod(
         path: path,
@@ -226,6 +256,8 @@ class GenCommand extends Command<int> {
         tag: tag,
         existingSchema: schemas.containsKey(tag),
         methodAllowed: allowedMethods.contains('patch'),
+        securityNames: securityNames,
+        securityScopes: securityScopes,
       ),
       delete: _generateDeleteMethod(
         path: path,
@@ -234,6 +266,8 @@ class GenCommand extends Command<int> {
         queryParams: queryParams,
         tag: tag,
         methodAllowed: allowedMethods.contains('delete'),
+        securityNames: securityNames,
+        securityScopes: securityScopes,
       ),
     );
   }
@@ -260,6 +294,8 @@ class GenCommand extends Command<int> {
     required List<String> queryParams,
     required String tag,
     required bool methodAllowed,
+    required List<String> securityNames,
+    required List<String> securityScopes,
   }) {
     if (methodAllowed) {
       return Method(
@@ -302,6 +338,11 @@ class GenCommand extends Command<int> {
             description: 'Deleted',
           ),
         },
+        security: securityNames
+            .map(
+              (name) => {name: securityScopes},
+            )
+            .toList(),
       );
     }
     return null;
@@ -318,6 +359,8 @@ class GenCommand extends Command<int> {
     required String tag,
     required bool existingSchema,
     required bool methodAllowed,
+    required List<String> securityNames,
+    required List<String> securityScopes,
   }) {
     if (methodAllowed) {
       final schemaReference = existingSchema
@@ -371,6 +414,11 @@ class GenCommand extends Command<int> {
             description: 'Created $tag.',
           ),
         },
+        security: securityNames
+            .map(
+              (name) => {name: securityScopes},
+            )
+            .toList(),
       );
     }
     return null;
@@ -387,6 +435,8 @@ class GenCommand extends Command<int> {
     required String tag,
     required bool existingSchema,
     required bool methodAllowed,
+    required List<String> securityNames,
+    required List<String> securityScopes,
   }) {
     if (methodAllowed) {
       final schemaReference = existingSchema
@@ -445,6 +495,11 @@ class GenCommand extends Command<int> {
             },
           ),
         },
+        security: securityNames
+            .map(
+              (name) => {name: securityScopes},
+            )
+            .toList(),
       );
     }
     return null;
@@ -461,6 +516,8 @@ class GenCommand extends Command<int> {
     required String tag,
     required bool existingSchema,
     required bool methodAllowed,
+    required List<String> securityNames,
+    required List<String> securityScopes,
   }) {
     final isList = !path.endsWithPathParam();
 
@@ -522,6 +579,11 @@ class GenCommand extends Command<int> {
           },
         ),
       },
+      security: securityNames
+          .map(
+            (name) => {name: securityScopes},
+          )
+          .toList(),
     );
   }
 
@@ -534,6 +596,8 @@ class GenCommand extends Command<int> {
     required List<String> headerParams,
     required String tag,
     required bool methodAllowed,
+    required List<String> securityNames,
+    required List<String> securityScopes,
   }) {
     if (!methodAllowed) {
       return null;
@@ -569,6 +633,11 @@ class GenCommand extends Command<int> {
           description: 'Meta informations about $tag.',
         ),
       },
+      security: securityNames
+          .map(
+            (name) => {name: securityScopes},
+          )
+          .toList(),
     );
   }
 
@@ -581,6 +650,8 @@ class GenCommand extends Command<int> {
     required List<String> headerParams,
     required String tag,
     required bool methodAllowed,
+    required List<String> securityNames,
+    required List<String> securityScopes,
   }) {
     if (!methodAllowed) {
       return null;
@@ -614,13 +685,55 @@ class GenCommand extends Command<int> {
         204: ResponseBody(
           description: 'Allowed HTTP methods for $path',
           headers: {
-            'Allow': const Schema(
-              type: 'string',
+            'Allow': Header(
+              description: 'Allowed HTTP methods for $path',
+              schema: const Schema(
+                type: 'string',
+              ),
             ),
           },
         ),
       },
+      security: securityNames
+          .map(
+            (name) => {name: securityScopes},
+          )
+          .toList(),
     );
+  }
+
+  ///
+  /// Extract security scopes from [routeFile]
+  /// like /// @Scope(scope_name)
+  /// will return ['scope_name']
+  /// if no security scope is found, return an empty list
+  ///
+  List<String> _extractSecurityScopes(String routeFile) {
+    final file = _fileSystem.file(routeFile);
+    final content = file.readAsStringSync();
+    final matches = RegExp(r'///\s*@Scope\((.*)\)').allMatches(content);
+    return matches
+        .map((e) => e.group(1)!)
+        .map((it) => it.split(','))
+        .expand((it) => it) // flatten List<List<String>> => List<String>
+        .toList();
+  }
+
+  ///
+  /// Extract security names from [routeFile]
+  /// like /// @Security(api_key)
+  /// will return ['api_key']
+  /// if no security name is found, return an empty list
+  ///
+  List<String> _extractSecurityNames(String routeFile) {
+    final file = _fileSystem.file(routeFile);
+    final content = file.readAsStringSync();
+    final matches = RegExp(r'///\s*@Security\((.*)\)').allMatches(content);
+    return matches
+        .map((e) => e.group(1)!)
+        .map((it) => it.split(','))
+        .expand((it) => it) // flatten List<List<String>> => List<String>
+        .toList();
   }
 
   ///

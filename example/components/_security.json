@@ -1,0 +1,23 @@
+{
+  "todos_basic_auth": {
+    "type": "http",
+    "scheme": "basic"
+  },
+  "todos_api_key": {
+    "type": "apiKey",
+    "name": "api_key",
+    "in": "header"
+  },
+  "todos_oauth": {
+    "type": "oauth2",
+    "flows": {
+      "implicit": {
+        "authorizationUrl": "https://nenuphar.io/oauth/authorize",
+        "scopes": {
+          "write:todos": "modify todos",
+          "read:todos": "read your todos"
+        }
+      }
+    }
+  }
+}

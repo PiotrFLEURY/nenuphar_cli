@@ -15,7 +15,7 @@ class ResponseBody {
       _$ResponseBodyFromJson(json);
 
   final String description;
-  final Map<String, Schema> headers;
+  final Map<String, Header> headers;
   final Map<String, MediaType> content;
 
   Map<String, dynamic> toJson() => _$ResponseBodyToJson(this);

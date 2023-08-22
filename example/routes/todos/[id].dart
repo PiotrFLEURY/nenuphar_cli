@@ -11,6 +11,8 @@ import 'package:example/services/todo_service.dart';
 ///
 /// @Header(User-Name) - The user name header
 ///
+/// @Security(todos_api_key) - The api key security scheme defined in
+///   components/_security.dart
 ///
 Future<Response> onRequest(
   RequestContext context,

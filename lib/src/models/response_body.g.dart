@@ -9,7 +9,7 @@ part of 'response_body.dart';
 ResponseBody _$ResponseBodyFromJson(Map<String, dynamic> json) => ResponseBody(
       description: json['description'] as String? ?? '',
       headers: (json['headers'] as Map<String, dynamic>?)?.map(
-            (k, e) => MapEntry(k, Schema.fromJson(e as Map<String, dynamic>)),
+            (k, e) => MapEntry(k, Header.fromJson(e as Map<String, dynamic>)),
           ) ??
           const {},
       content: (json['content'] as Map<String, dynamic>?)?.map(
