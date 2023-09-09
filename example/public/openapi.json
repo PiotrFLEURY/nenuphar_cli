@@ -74,92 +74,6 @@
     }
   },
   "paths": {
-    "/todos/{id}": {
-      "get": {
-        "tags": [
-          "todos"
-        ],
-        "responses": {
-          "200": {
-            "description": "A todos.",
-            "headers": {},
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/todos"
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "deprecated": false,
-            "allowEmptyValue": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "User-Name",
-            "in": "header",
-            "required": false,
-            "deprecated": false,
-            "allowEmptyValue": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "security": [
-          {
-            "todos_api_key": []
-          }
-        ]
-      },
-      "delete": {
-        "tags": [
-          "todos"
-        ],
-        "responses": {
-          "204": {
-            "description": "Deleted",
-            "headers": {},
-            "content": {}
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "deprecated": false,
-            "allowEmptyValue": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "User-Name",
-            "in": "header",
-            "required": false,
-            "deprecated": false,
-            "allowEmptyValue": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "security": [
-          {
-            "todos_api_key": []
-          }
-        ]
-      }
-    },
     "/todos": {
       "get": {
         "tags": [
@@ -357,6 +271,92 @@
               "read:todos",
               "write:todos"
             ]
+          }
+        ]
+      }
+    },
+    "/todos/{id}": {
+      "get": {
+        "tags": [
+          "todos"
+        ],
+        "responses": {
+          "200": {
+            "description": "A todos.",
+            "headers": {},
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/todos"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "deprecated": false,
+            "allowEmptyValue": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "User-Name",
+            "in": "header",
+            "required": false,
+            "deprecated": false,
+            "allowEmptyValue": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "todos_api_key": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "todos"
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted",
+            "headers": {},
+            "content": {}
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "deprecated": false,
+            "allowEmptyValue": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "User-Name",
+            "in": "header",
+            "required": false,
+            "deprecated": false,
+            "allowEmptyValue": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "todos_api_key": []
           }
         ]
       }

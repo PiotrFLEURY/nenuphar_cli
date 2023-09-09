@@ -56,6 +56,13 @@ class NenupharCliCommandRunner extends CompletionCommandRunner<int> {
         fileSystem: _fileSystem,
       ),
     );
+    addCommand(
+      WatchCommand(
+        logger: _logger,
+        fileSystem: _fileSystem,
+        onRouteChanged: () async => run(['gen']),
+      ),
+    );
   }
 
   @override
