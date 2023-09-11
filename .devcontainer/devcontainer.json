@@ -1,0 +1,52 @@
+{
+    "image": "ghcr.io/piotrfleury/devcontainer-flutter:latest",
+    "forwardPorts": [3000],
+    "customizations": {
+        // Configure properties specific to VS Code.
+        "vscode": {
+            "settings": {
+                "workbench.colorTheme": "Community Material Theme",
+                "workbench.iconTheme": "material-icon-theme",
+                "[dart]": {
+                    "editor.formatOnSave": true,
+                    "editor.formatOnType": true,
+                    "editor.rulers": [
+                        80
+                    ],
+                    "editor.selectionHighlight": false,
+                    "editor.suggest.snippetsPreventQuickSuggestions": false,
+                    "editor.suggestSelection": "first",
+                    "editor.tabCompletion": "onlySnippets",
+                    "editor.wordBasedSuggestions": false
+                },
+                "editor.stablePeek": true,
+                "files.autoSave": "onFocusChange",
+                "editor.inlineSuggest.enabled": true,
+                "window.zoomLevel": 1,
+                "github.copilot.enable": {
+                    "*": true,
+                    "yaml": false,
+                    "plaintext": false,
+                    "markdown": true
+                }
+            },
+            "extensions": [
+                "equinusocio.vsc-community-material-theme",
+                "equinusocio.vsc-material-theme-icons",
+                "equinusocio.vsc-material-theme",
+                "pkief.material-icon-theme",
+                
+                "dart-code.dart-code",
+                "dart-code.flutter",
+                
+                "github.copilot",
+                
+                "eamodio.gitlens",
+                "usernamehw.errorlens",
+                "pflannery.vscode-versionlens",
+
+                "davidanson.vscode-markdownlint"
+            ]
+        }
+    }
+}
