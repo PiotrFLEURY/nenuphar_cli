@@ -28,6 +28,7 @@ Generate your OpenAPI documentation in few steps:
 - [Generate openapi definition file](#generate-openapi-definition-file)
   - [gen failures](#gen-failures)
   - [gen command available options](#gen-command-available-options)
+  - [Watch mode](#watch-mode)
 - [Declare resources components](#resources-components)
   - [Declare a resource](#declare-a-resource)
 - [Allowed methods](#allowed-methods)
@@ -194,6 +195,16 @@ This file is loaded by the `public/index.html` file to display the documentation
 > NOTICE: 
 > 
 > You need to run the nenuphar gen command each time you update your API.
+
+### Watch mode
+
+nenuphar can watch your Dart Frog project to automatically generate the openapi definition file each time you update a route.
+
+```sh
+nenuphar watch
+```
+
+This command will use the dart_frog daemon to watch your route modifications using the command `dart_frog daemon`
 
 ## Resources components
 
