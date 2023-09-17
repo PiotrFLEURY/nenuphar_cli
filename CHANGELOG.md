@@ -1,5 +1,9 @@
 # nenuphar_cli changelog
 
+## 0.2.0 (2023-09-17)
+
+* Add `nenuphar watch` command
+
 ## 0.1.0 (2023-08-22)
 
 * Add security schemes
