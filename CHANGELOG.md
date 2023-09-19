@@ -1,5 +1,9 @@
 # nenuphar_cli changelog
 
+## 0.2.1 (2023-09-19)
+
+* ignoring `/docs/` folder in `.pubignore` file
+
 ## 0.2.0 (2023-09-17)
 
 * Add `nenuphar watch` command
