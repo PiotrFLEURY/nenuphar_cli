@@ -1,5 +1,7 @@
 # nenuphar_cli changelog
+## 0.2.2 (2023-09-2)
 
+* fix `executableName` to show correct executable command in help
 ## 0.2.1 (2023-09-19)
 
 * ignoring `/docs/` folder in `.pubignore` file

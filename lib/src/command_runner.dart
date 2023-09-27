@@ -8,7 +8,7 @@ import 'package:nenuphar_cli/src/commands/commands.dart';
 import 'package:nenuphar_cli/src/version.dart';
 import 'package:pub_updater/pub_updater.dart';
 
-const executableName = 'nenuphar_cli';
+const executableName = 'nenuphar';
 const packageName = 'nenuphar_cli';
 const description = 'A Very Good Project created by Very Good CLI.';
 
