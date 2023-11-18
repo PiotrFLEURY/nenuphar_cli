@@ -1,0 +1,35 @@
+targets:
+  $default:
+    builders:
+      json_schema_builder:
+        enabled: true
+        generate_for:
+          - lib/**
+      allow_method_builder:
+        enabled: true
+        generate_for:
+          - routes/**
+
+builders:
+  json_schema_builder:
+    import: 'package:nenuphar_generator/builder.dart'
+    builder_factories: ['jsonSchemaBuilder']
+    build_extensions: { '.dart': ['.json'] }
+    auto_apply: dependents
+    build_to: source
+    defaults:
+      generate_for:
+        # Only apply to .dart files in the lib directory
+        include:
+        - lib/**
+  allow_method_builder:
+    import: 'package:nenuphar_generator/builder.dart'
+    builder_factories: ['annotationBuilder']
+    build_extensions: { '.dart': ['.nenuphar.dart'] }
+    auto_apply: dependents
+    build_to: cache
+    defaults:
+      generate_for:
+        # Only apply to .dart files in the lib directory
+        include:
+        - routes/**

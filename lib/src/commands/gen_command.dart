@@ -281,6 +281,19 @@ class GenCommand extends Command<int> {
       final json = jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
       final schema = Schema.fromJson(json);
       schemas[tag] = schema;
+    } else {
+      // TODO(annotations): fetch models path from
+      //  @RequestBody & @Response annotations
+      final schemaFile = _fileSystem.file(
+        '${_fileSystem.currentDirectory.path}/lib/models/$tag.json',
+      );
+
+      if (schemaFile.existsSync()) {
+        final schemaFileContent = schemaFile.readAsStringSync();
+        final json = jsonDecode(schemaFileContent) as Map<String, dynamic>;
+        final schema = Schema.fromJson(json);
+        schemas[tag] = schema;
+      }
     }
   }
 
@@ -743,7 +756,7 @@ class GenCommand extends Command<int> {
   /// if no allowed methods is found, return an empty list
   ///
   List<String> _extractAllowMethods(String routeFile) {
-    final file = _fileSystem.file(routeFile);
+    final file = _getRouteSpecFile(routeFile);
     final content = file.readAsStringSync();
     final matches = RegExp(r'///\s*@Allow\((.*)\)').allMatches(content);
     return matches
@@ -814,5 +827,43 @@ class GenCommand extends Command<int> {
     }
 
     return routes;
+  }
+
+  String _readPackageName() {
+    final pubspecFile = _fileSystem.file('pubspec.yaml');
+    if (!pubspecFile.existsSync()) {
+      return '';
+    }
+
+    final pubspec = pubspecFile.readAsStringSync();
+    final matches = RegExp(r'name:\s*(.*)').allMatches(pubspec);
+    return matches.first.group(1)!;
+  }
+
+  File _getRouteSpecFile(
+    String routePath,
+  ) {
+    final nenupharPath = routePath.replaceFirst('.dart', '.nenuphar.dart');
+    final package = _readPackageName();
+
+    if (package.isEmpty) {
+      return _fileSystem.file(routePath);
+    }
+
+    // replace location
+    //  from /routes/**
+    //  to .dart_tool/build/generated/$packageName/routes/**
+    final nenupharFile = _fileSystem.file(
+      nenupharPath.replaceFirst(
+        _fileSystem.currentDirectory.path,
+        '.dart_tool/build/generated/$package/',
+      ),
+    );
+
+    if (!nenupharFile.existsSync()) {
+      return _fileSystem.file(routePath);
+    }
+
+    return nenupharFile;
   }
 }
