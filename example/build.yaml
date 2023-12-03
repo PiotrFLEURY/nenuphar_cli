@@ -1,0 +1,11 @@
+targets:
+  $default:
+    sources:
+      # Customized sources
+      # see: https://github.com/dart-lang/build/blob/master/docs/faq.md#how-can-i-include-additional-sources-in-my-build
+      - routes/**
+      - lib/**
+      - web/**
+      # Note that it is important to include these in the default target.
+      - pubspec.*
+      - $package$

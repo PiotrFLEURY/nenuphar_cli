@@ -1,0 +1,23 @@
+name: nenuphar_generator
+description: A starting point for Dart libraries or applications.
+version: 0.1.0
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+repository: https://github.com/PiotrFLEURY/nenuphar_cli
+
+environment:
+  sdk: ^3.2.0
+
+# Add regular dependencies here.
+dependencies:
+  analyzer: ^6.3.0
+  build: ^2.4.1
+  code_builder: ^4.7.0
+  dart_style: ^2.3.3
+  nenuphar_annotations: 
+    path: ../nenuphar_annotations
+  source_gen: ^1.4.0
+
+dev_dependencies:
+  lints: ^2.1.0
+  #source_gen_test: ^1.0.6
+  test: ^1.24.0
