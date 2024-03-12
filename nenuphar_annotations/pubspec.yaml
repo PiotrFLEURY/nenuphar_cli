@@ -1,0 +1,16 @@
+name: nenuphar_annotations
+description: Annotations for nenuphar_cli
+version: 0.1.0
+repository: https://github.com/PiotrFLEURY/nenuphar_cli
+publish_to: 'none'
+
+environment:
+  sdk: ^3.2.0
+
+# Add regular dependencies here.
+dependencies:
+  #dart_frog: ^1.0.0
+
+dev_dependencies:
+  lints: ^2.1.0
+  test: ^1.24.0

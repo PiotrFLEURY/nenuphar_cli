@@ -1,9 +1,11 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:nenuphar_annotations/nenuphar_annotations.dart';
 
 part 'todos.g.dart';
 
 /// Todo model
 @JsonSerializable()
+@jsonSchema
 class Todo {
   ///
   /// Constructor
