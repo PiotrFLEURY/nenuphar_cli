@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
 import 'package:example/services/todo_service.dart';
+import 'package:nenuphar_annotations/nenuphar_annotations.dart';
 
 ///
 /// The /todos/[id] routes
@@ -14,6 +15,16 @@ import 'package:example/services/todo_service.dart';
 /// @Security(todos_api_key) - The api key security scheme defined in
 ///   components/_security.dart
 ///
+@Allow([
+  'GET',
+  'DELETE',
+])
+@Header([
+  'User-Name',
+])
+@Security([
+  'todos_api_key',
+])
 Future<Response> onRequest(
   RequestContext context,
   String id,

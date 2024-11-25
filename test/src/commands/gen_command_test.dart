@@ -247,21 +247,22 @@ Future<Response> onRequest(RequestContext context) async {
       );
     });
 
-    test('Generates only allowed methods if @Allow tag exists', () async {
-      // GIVEN
-      final publicDir = memoryFileSystem.directory('public');
-      if (!publicDir.existsSync()) {
-        publicDir.createSync();
-      }
-      memoryFileSystem.file('nenuphar.json')
-        ..createSync()
-        ..writeAsStringSync(
-          const JsonEncoder.withIndent('  ').convert(OpenApi()),
-        );
+    group('Allow', () {
+      test('Generates only allowed methods if @Allow tag exists', () async {
+        // GIVEN
+        final publicDir = memoryFileSystem.directory('public');
+        if (!publicDir.existsSync()) {
+          publicDir.createSync();
+        }
+        memoryFileSystem.file('nenuphar.json')
+          ..createSync()
+          ..writeAsStringSync(
+            const JsonEncoder.withIndent('  ').convert(OpenApi()),
+          );
 
-      memoryFileSystem.file('/routes/index.dart').createSync(recursive: true);
+        memoryFileSystem.file('/routes/index.dart').createSync(recursive: true);
 
-      const todosFileContent = '''
+        const todosFileContent = '''
 import 'dart:convert';
 import 'dart:io';
 
@@ -273,32 +274,114 @@ Future<Response> onRequest(RequestContext context) async {
 }
 ''';
 
-      memoryFileSystem.file('/routes/todos.dart')
-        ..createSync(recursive: true)
-        ..writeAsStringSync(todosFileContent);
+        memoryFileSystem.file('/routes/todos.dart')
+          ..createSync(recursive: true)
+          ..writeAsStringSync(todosFileContent);
 
-      // WHEN
-      final result = await commandRunner.run(['gen']);
+        // WHEN
+        final result = await commandRunner.run(['gen']);
 
-      // THEN
-      expect(result, equals(ExitCode.success.code));
-      final openApiFile = memoryFileSystem.file('/public/openapi.json');
-      expect(openApiFile.existsSync(), isTrue);
-      final openApi = OpenApi.fromJson(
-        jsonDecode(
-          openApiFile.readAsStringSync(),
-        ) as Map<String, dynamic>,
-      );
+        // THEN
+        expect(result, equals(ExitCode.success.code));
+        final openApiFile = memoryFileSystem.file('/public/openapi.json');
+        expect(openApiFile.existsSync(), isTrue);
+        final openApi = OpenApi.fromJson(
+          jsonDecode(
+            openApiFile.readAsStringSync(),
+          ) as Map<String, dynamic>,
+        );
 
-      expect(openApi.paths, isNotEmpty);
-      expect(openApi.paths['/todos']?.get, isNotNull);
-      expect(openApi.paths['/todos']?.post, isNotNull);
-      expect(openApi.paths['/todos']?.put, isNotNull);
-      expect(openApi.paths['/todos']?.delete, isNotNull);
-      expect(openApi.paths['/todos']?.head, isNull);
-      expect(openApi.paths['/todos']?.options, isNull);
-      expect(openApi.paths['/todos']?.patch, isNull);
-      expect(openApi.paths['/todos']?.trace, isNull);
+        expect(openApi.paths, isNotEmpty);
+        expect(openApi.paths['/todos']?.get, isNotNull);
+        expect(openApi.paths['/todos']?.post, isNotNull);
+        expect(openApi.paths['/todos']?.put, isNotNull);
+        expect(openApi.paths['/todos']?.delete, isNotNull);
+        expect(openApi.paths['/todos']?.head, isNull);
+        expect(openApi.paths['/todos']?.options, isNull);
+        expect(openApi.paths['/todos']?.patch, isNull);
+        expect(openApi.paths['/todos']?.trace, isNull);
+      });
+      test('Generates only allowed methods if @Allow annotation exists',
+          () async {
+        // GIVEN
+        final publicDir = memoryFileSystem.directory('public');
+        if (!publicDir.existsSync()) {
+          publicDir.createSync();
+        }
+        memoryFileSystem.file('nenuphar.json')
+          ..createSync()
+          ..writeAsStringSync(
+            const JsonEncoder.withIndent('  ').convert(OpenApi()),
+          );
+
+        memoryFileSystem.file('/routes/index.dart').createSync(recursive: true);
+
+        const todosFileContent = '''
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:dart_frog/dart_frog.dart';
+import 'package:nenuphar_annotations/nenuphar_annotations.dart';
+
+@Allow([
+  'GET', 
+  'post', 
+  'Put', 
+  'DeLeTe',
+])
+Future<Response> onRequest(RequestContext context) async {
+  return Response(statusCode: HttpStatus.ok);
+}
+''';
+
+        memoryFileSystem.file('/routes/todos.dart')
+          ..createSync(recursive: true)
+          ..writeAsStringSync(todosFileContent);
+
+        const todosNenupharFileContent = '''
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+/// @Allow(GET, POST, PUT, DELETE)
+library todos;
+''';
+
+        memoryFileSystem.file(
+          '.dart_tool/build/generated/example/routes/todos.nenuphar.dart',
+        )
+          ..createSync(recursive: true)
+          ..writeAsStringSync(todosNenupharFileContent);
+
+        const pubspecFileContent = '''
+name: example
+''';
+
+        memoryFileSystem.file('pubspec.yaml')
+          ..createSync(recursive: true)
+          ..writeAsStringSync(pubspecFileContent);
+
+        // WHEN
+        final result = await commandRunner.run(['gen']);
+
+        // THEN
+        expect(result, equals(ExitCode.success.code));
+        final openApiFile = memoryFileSystem.file('/public/openapi.json');
+        expect(openApiFile.existsSync(), isTrue);
+        final openApi = OpenApi.fromJson(
+          jsonDecode(
+            openApiFile.readAsStringSync(),
+          ) as Map<String, dynamic>,
+        );
+
+        expect(openApi.paths, isNotEmpty);
+        expect(openApi.paths['/todos']?.get, isNotNull);
+        expect(openApi.paths['/todos']?.post, isNotNull);
+        expect(openApi.paths['/todos']?.put, isNotNull);
+        expect(openApi.paths['/todos']?.delete, isNotNull);
+        expect(openApi.paths['/todos']?.head, isNull);
+        expect(openApi.paths['/todos']?.options, isNull);
+        expect(openApi.paths['/todos']?.patch, isNull);
+        expect(openApi.paths['/todos']?.trace, isNull);
+      });
     });
 
     test(
@@ -334,6 +417,74 @@ Future<Response> onRequest(RequestContext context) async {
       memoryFileSystem.file('/components/todos.json')
         ..createSync(recursive: true)
         ..writeAsStringSync(componentJson);
+
+      // WHEN
+      final result = await commandRunner.run(['gen']);
+
+      // THEN
+      expect(result, equals(ExitCode.success.code));
+      final openApiFile = memoryFileSystem.file('/public/openapi.json');
+      expect(openApiFile.existsSync(), isTrue);
+      final openApi = OpenApi.fromJson(
+        jsonDecode(
+          openApiFile.readAsStringSync(),
+        ) as Map<String, dynamic>,
+      );
+      expect(openApi.tags, isNotEmpty);
+      expect(openApi.tags![0].name, equals('todos'));
+
+      expect(openApi.paths, isNotEmpty);
+      expect(openApi.paths['/todos']?.delete, isNotNull);
+      expect(openApi.paths['/todos']?.get, isNotNull);
+      expect(openApi.paths['/todos']?.head, isNotNull);
+      expect(openApi.paths['/todos']?.options, isNotNull);
+      expect(openApi.paths['/todos']?.patch, isNotNull);
+      expect(openApi.paths['/todos']?.post, isNotNull);
+      expect(openApi.paths['/todos']?.put, isNotNull);
+      expect(openApi.paths['/todos']?.trace, isNull);
+
+      expect(openApi.components?.schemas, isNotEmpty);
+      expect(openApi.components?.schemas['todos'], isNotNull);
+    });
+
+    test('''
+Contains OPTION GET HEAD POST PUT PATCH for /todos route 
+(with generated components from  jsonSchema annoation)
+''', () async {
+      // GIVEN
+      final publicDir = memoryFileSystem.directory('public');
+      if (!publicDir.existsSync()) {
+        publicDir.createSync();
+      }
+      memoryFileSystem.file('nenuphar.json')
+        ..createSync()
+        ..writeAsStringSync(
+          const JsonEncoder.withIndent('  ').convert(OpenApi()),
+        );
+
+      memoryFileSystem.file('/routes/index.dart').createSync(recursive: true);
+      memoryFileSystem.file('/routes/todos.dart').createSync(recursive: true);
+
+      const generatedJson = '''
+{
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "format": "int64"
+        },
+        "name": {
+            "type": "string"
+        },
+        "completed": {
+            "type": "boolean"
+        }
+    }
+}
+''';
+      memoryFileSystem.file('/lib/models/todos.json')
+        ..createSync(recursive: true)
+        ..writeAsStringSync(generatedJson);
 
       // WHEN
       final result = await commandRunner.run(['gen']);

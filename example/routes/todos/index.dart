@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dart_frog/dart_frog.dart';
 import 'package:example/models/todos.dart';
 import 'package:example/services/todo_service.dart';
+import 'package:nenuphar_annotations/nenuphar_annotations.dart';
 
 ///
 /// The /todos routes
@@ -26,6 +27,22 @@ import 'package:example/services/todo_service.dart';
 /// @Scope(write:todos) - Write scope
 ///
 ///
+@Allow([
+  'GET',
+  'HEAD',
+  'POST',
+  'OPTIONS',
+])
+@Header(['User-Name'])
+@Query(['completed'])
+@Security([
+  'todos_basic_auth',
+  'todos_oauth',
+])
+@Scope([
+  'read:todos',
+  'write:todos',
+])
 Future<Response> onRequest(RequestContext context) async {
   final todosService = context.read<TodoService>();
 
